@@ -2,12 +2,15 @@ import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 
-// Studio access: one shared passcode for Herman's team (STUDIO_PASSCODE).
-// The cookie holds an HMAC of the passcode, never the passcode itself.
+// Studio (admin) access: one access code shared with Herman's team and staff.
+// Set STUDIO_ACCESS_CODE (STUDIO_PASSCODE still works). Without the code nobody can
+// open Studio or run any admin action. The cookie holds an HMAC of the code, never the code.
 const COOKIE = "studio_session";
 
+const accessCode = () => process.env.STUDIO_ACCESS_CODE || process.env.STUDIO_PASSCODE || "";
+
 function sessionToken(): string | null {
-  const pass = process.env.STUDIO_PASSCODE;
+  const pass = accessCode();
   if (!pass) return null;
   return createHmac("sha256", pass).update("behind-the-hook-studio-v1").digest("hex");
 }
@@ -31,7 +34,7 @@ export async function requireTeam() {
 }
 
 export async function startSession(passcode: string): Promise<boolean> {
-  const pass = process.env.STUDIO_PASSCODE;
+  const pass = accessCode();
   const token = sessionToken();
   if (!pass || !token || !safeEqual(passcode, pass)) return false;
   (await cookies()).set(COOKIE, token, {

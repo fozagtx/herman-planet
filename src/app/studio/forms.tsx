@@ -25,15 +25,15 @@ export function SignInForm() {
   return (
     <form action={action} className="surface mx-auto mt-10 grid max-w-sm gap-4 p-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Studio sign in</h1>
-        <p className="mt-1 text-sm text-muted-foreground">For Herman&apos;s team. Ask the team lead for the passcode.</p>
+        <h1 className="text-2xl font-semibold tracking-tight">Team access</h1>
+        <p className="mt-1 text-sm text-muted-foreground">For Herman&apos;s team and staff. Enter the access code the team shared with you.</p>
       </div>
       <label className={labelCls}>
-        Passcode
+        Access code
         <input name="passcode" type="password" required autoComplete="current-password" className={fieldCls} />
       </label>
       <Status state={state} />
-      <button disabled={pending} className={btn}>{pending ? "Checking" : "Sign in"}</button>
+      <button disabled={pending} className={btn}>{pending ? "Checking" : "Enter Studio"}</button>
     </form>
   );
 }

@@ -25,8 +25,12 @@ function refresh(slug?: string) {
 // --- Session ---
 
 export async function signIn(_prev: FormState, form: FormData): Promise<FormState> {
-  const ok = await startSession(String(form.get("passcode") ?? ""));
-  if (!ok) return { ok: false, message: "That passcode didn't match. Check it with Herman's team." };
+  const ok = await startSession(String(form.get("passcode") ?? "").trim());
+  if (!ok) {
+    // Slow down guessing: every wrong code costs time.
+    await new Promise((r) => setTimeout(r, 1500));
+    return { ok: false, message: "That access code didn't work. Check it with Herman's team." };
+  }
   redirect("/studio");
 }
 

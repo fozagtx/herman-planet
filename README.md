@@ -51,7 +51,7 @@ Herman Suede's home on the web: a track-first fan site where a listener hears a 
 - **The wall:** fans post a note and the song that got them; only notes the team features appear.
 - **Shop:** merch and unreleased music. Fans pay with Bachs (card or mobile money) or ask the team to contact them.
 
-**For Herman's team** (`/studio`, passcode)
+**For Herman's team** (`/studio`, access code)
 
 - Timed notes with approval, track details, live update, new tracks.
 - The Pack: name, orders, shows and meetups with bookings, fan wall moderation, giveaways, shop with photo upload, sample data removal.
@@ -178,7 +178,7 @@ Check `http://localhost:3000/api/health` returns `"database":"connected"`.
 | `DATABASE_URL` | Yes | Neon pooled connection (host contains `-pooler`), `sslmode=verify-full` |
 | `DATABASE_URL_UNPOOLED` | Yes | Neon direct connection, used by migrations and seeds |
 | `NEXT_PUBLIC_SITE_URL` | Yes | Public base URL, e.g. `https://herman-planet.vercel.app`; used for share images and checkout return links |
-| `STUDIO_PASSCODE` | Yes | Shared passcode for `/studio`. Rotate it to sign everyone out |
+| `STUDIO_ACCESS_CODE` | Yes | The access code shared with Herman's team and staff. Without it nobody can open Studio or run any admin action (uploads, giveaways, orders, events, notes). Change it to sign everyone out. `STUDIO_PASSCODE` is still accepted |
 | `BACHS_API_KEY` | For payments | `sk_sandbox_…` to test, `sk_live_…` for real money. Without it, buyers can only ask the team to contact them |
 | `BACHS_WEBHOOK_SECRET` | For payments | Signing secret of your Bachs webhook endpoint |
 
@@ -220,7 +220,7 @@ Samples never create a checkout. Writes to Bachs use an idempotency key per orde
 
 ## 12. Studio: the team's guide
 
-Open `/studio` and sign in with the passcode.
+Open `/studio` and enter the team access code. Every admin action re-checks it on the server, and wrong codes are slowed down to stop guessing.
 
 **Studio**
 - **Timed notes:** add a note at a second in the song, send it for review, approve it. Only approved notes reach fans.
@@ -280,7 +280,7 @@ Nothing on the site is invented. Where we didn't have the team's own words, cont
 | Symptom | Fix |
 |---|---|
 | `/api/health` says unreachable | Check `DATABASE_URL`; Neon may be waking from idle, retry |
-| Studio keeps asking for the passcode | `STUDIO_PASSCODE` isn't set in that environment |
+| Studio keeps asking for the access code | `STUDIO_ACCESS_CODE` isn't set in that environment |
 | Buy only offers "contact me" | `BACHS_API_KEY` isn't set, or the item has no amount |
 | Orders never turn Paid | Check the webhook URL and `BACHS_WEBHOOK_SECRET`; the endpoint returns 503 when the secret is missing |
 | Song page plays only 30 seconds | The visitor isn't signed in to Spotify; the page says so |
@@ -295,3 +295,4 @@ Nothing on the site is invented. Where we didn't have the team's own words, cont
 - **Cover art and previews:** Apple Music (iTunes Lookup API). **Full songs:** Spotify embed.
 - **Components:** VengeanceUI, islandcn (Hugeicons glyphs, MIT), shadcn/ui.
 - **Herman's photo:** from the project brief.
+- **Favicon:** the wolf photo above, cropped.
