@@ -1,57 +1,87 @@
 # Behind the Hook · Herman Suede
 
-A track-first home for Herman Suede. A listener lands on a song, hears it, opens the story behind specific moments (sound, lyrics, production, credits), goes to the official release, and leaves their city so Herman's team knows where fans are.
+A track-first home for Herman Suede. A listener lands on a song, hears it, opens the story behind specific moments (sound, lyrics, production, credits), goes to the official release, and follows Herman for what comes next. His team runs all of it from one page, `/studio`.
 
 Live: https://herman-planet.vercel.app
 
 | Route | Who it's for | What it does |
 |---|---|---|
-| `/` | Listeners | Herman's site: latest release, every release with previews, lines from the song, video, sign-up with city |
+| `/` | Listeners | Herman's site: the new single, every release with previews, his Spotify numbers, about, lines from the song, eight years of covers, video, follow |
 | `/t/she-get` | Listeners | The track page: the real song via Spotify, timed moments, credits, more releases, follow |
-| `/t/she-get/m/42` | Shared links | Same page, opened on a marked moment (here 0:42) with a matching share image |
-| `/studio` | Herman's team | Write timed notes, send for review, approve, unpublish |
-| `/team` | Herman's team, promoters | Followers by city, who would buy a ticket, which moment brought them in, CSV export |
+| `/t/she-get/m/42` | Shared links | Same page, opened on a marked moment (here 0:42), with its own share image |
+| `/studio` | Herman's team (passcode) | Approve notes, edit track details and links, publish a live update, add tracks |
 
 ## How it answers the brief
 
 | Brief | Where |
 |---|---|
-| 01 Hear it: a fan arrives through a shared song or clip | Moment links (`/t/[slug]/m/[seconds]`) open on that second, each with its own preview card |
-| 02 Explore: approved preview with timed notes, with credits | Markers on the timeline and a moment list; each note has a body, credits and its source |
-| 03 Listen in full: official release, related tracks | Spotify, Apple Music and YouTube links, plus "More from Herman" covers linking to each release |
-| 04 Come back: future releases, approved live update | Follow form (email or phone, city, "I'd buy a ticket", consent); a live update card appears only when one is approved |
+| 01 Hear it: a fan arrives through a shared song or clip | Moment links (`/t/[slug]/m/[seconds]`) open on that second; the share sheet on every moment makes them |
+| 02 Explore: approved preview with timed notes, with credits | Timeline markers and a moment list; each note has its body, credits and source |
+| 03 Listen in full: official release, related tracks | Spotify, Apple Music and YouTube buttons; "More from Herman" carousel with playable previews |
+| 04 Come back: follow future releases, approved live update | "Follow on Spotify", Apple Music, YouTube, Instagram; the Live card shows an update only after the team approves it in Studio |
 | Demo: jump to a marked moment, open the production note, move to the official release | Open `/t/she-get/m/20`, press Play, read the note, press Spotify |
 | Artist-approved notes | Fans only ever load notes with `status = approved` (enforced in the query, `src/lib/store.ts`) |
 | Cleared media | The song plays through Spotify's official embed; previews and artwork are Apple's official assets |
 | Working links | Every outbound link was checked to return 200 on 27 Nov 2026 |
-| City-by-city demand vs direct updates | Both in one form: the follow carries a city, so updates and demand come from the same sign-up |
+| City-by-city demand | Left as a question for Herman's team, as the brief says. No fan data is collected. |
+
+## Studio: the team's backend
+
+`/studio` is the one place Herman's team changes the site. Sign in with the shared passcode (`STUDIO_PASSCODE`).
+
+- **Timed notes:** add a note at a second in the song, send it for review, approve it. Editing a live note sends it back to review, because approval covers the exact words.
+- **Live update:** write a title and details, tick "Approved" and it shows in the Live card on the home and track pages. Unapproved, fans see "New dates, coming soon."
+- **Track details:** title, year, length, hook second, Spotify track link, cover image, release links, credits (`Role: Name` per line).
+- **Add a track:** title, year, length, Spotify link, cover. It goes live at `/t/<title>`.
+
+Security: the session cookie holds an HMAC of the passcode, not the passcode. Every Studio server action calls `requireTeam()` first, because server actions can be called by direct POST. Rotate the passcode by changing `STUDIO_PASSCODE` and redeploying; everyone is signed out.
 
 ## What is real and what is not
 
 Real:
-- The song "She Get" (released 25 Nov 2026). It plays through the Spotify embed. Signed in to Spotify, a listener hears the full song and can jump to any moment. Signed out, Spotify plays its own 30 second preview and the page says so.
-- Release covers and 30 second previews from Apple (iTunes Lookup API), credits as reported at release (MILN, BNYX®, realsmart), the One by One video, and the streaming and social links.
-- Followers and notes are stored in Neon Postgres.
+- "She Get" (released 25 Nov 2026) plays through the Spotify embed. Signed in to Spotify, a listener hears the full song and can jump to any moment. Signed out, Spotify plays its own 30 second preview and the page says so.
+- Covers and 30 second previews come from Apple (iTunes Lookup API). Credits are as reported at release (MILN, BNYX®, realsmart, rain. labs). The One by One video is the official upload.
+- Spotify numbers (17,445 monthly listeners; plays per song) were read from his public artist page on 27 Nov 2026. Spotify's API no longer exposes play counts, so `src/lib/stats.ts` is updated by hand.
+- Notes, track details and live updates are stored in Neon Postgres.
 
 Not yet from Herman's team:
-- The note text is drawn from published coverage of the single. Each note shows "From the release coverage" instead of an approval badge. Once the team rewrites and approves a note in `/studio`, it shows "Approved by Herman's team".
-- Note timestamps are estimates. The team sets the real seconds in `/studio`.
-- There are no show dates, so the page says "No dates yet" and asks for a city.
-- `/studio` and `/team` have no sign-in. Add auth before giving the URL to anyone outside the team.
+- Note text is drawn from published coverage of the single. Those notes show "From the release coverage" instead of an approval badge until the team rewrites and approves them in Studio.
+- Note timestamps are estimates. The team sets the real seconds in Studio.
+- No shows are announced, so the Live card reads "New dates, coming soon."
+
+## Design
+
+- **Paper & Ink**: warm paper, violet-black ink, colour only where it means something (peach, coral and lavender mark Sound, Lyrics and Production; `#edff00` on ink marks "Approved"). Geist for text, Instrument Serif for display.
+- **Mobile first**: every section checked at 375px with no sideways scroll. On phones the track page puts a small cover beside the title so the moments are in the first screen.
+- **Motion**: Lenis smooth scroll; all motion is off for visitors who prefer reduced motion.
+- **Accessibility**: 44px touch targets, a visible ink focus ring on everything, a keyboard-operable timeline (arrow keys seek 5 seconds), labelled form fields, skeletons while loading.
+
+VengeanceUI components and what each one does here:
+
+| Component | Job |
+|---|---|
+| Magnetic Spotlight Marquee | Hero: his photo and covers move past; hover pauses, a tap plays that song's preview |
+| Glow Border Card | The new single's cover, edged in the three note colours |
+| Diagonal Carousel + Music Player | Every release. Won a side-by-side test against Perspective, Cylinder and Circular: it keeps square covers whole, shows titles and can drive the player |
+| Circular Gallery | A ring of his covers around his Spotify monthly listeners |
+| Gooey Text Reveal | His two-sentence bio (from his Spotify profile), revealed on scroll |
+| Verse Cards | Lines from "She Get", dealt over the cover |
+| Image Collage | Eight years of covers; tap to line them up, 2018 to 2026 |
+| Share Sheet | Share the song or a moment (copy, QR, apps) |
+| Aurora Hero, Candy Button, Awwwards Nav | Closing band, primary buttons, bottom dock |
 
 ## Stack
 
 - Next.js 16 (App Router, Cache Components), React 19, Tailwind CSS 4
 - Neon Postgres with Drizzle ORM (`src/db`)
-- Spotify Embed iFrame API for playback (`src/components/use-spotify-player.ts`)
-- Web Audio stem player for tracks that come with cleared stems (`src/components/use-stem-player.ts`)
-- UI: the Paper & Ink system (warm paper, violet-black ink, colour only where it means something) and VengeanceUI components: Magnetic Spotlight Marquee, Diagonal Carousel, Music Player, Verse Cards, Aurora Hero, Awwwards Nav, Candy Button
+- Spotify Embed iFrame API (`src/components/use-spotify-player.ts`); a Web Audio stem player for tracks with cleared stems (`src/components/use-stem-player.ts`)
+- Lenis, GSAP, Framer Motion, react-icons (brand marks)
 
 ## Run it locally
 
 ```bash
 npm install
-cp .env.example .env.local   # then fill in your Neon connection strings
+cp .env.example .env.local   # fill in Neon strings and a Studio passcode
 npm run db:migrate           # create tables
 npm run db:seed              # add She Get and its notes (safe to re-run)
 npm run dev
@@ -62,7 +92,8 @@ npm run dev
 ```
 DATABASE_URL='postgresql://…-pooler…/neondb?sslmode=verify-full'
 DATABASE_URL_UNPOOLED='postgresql://…/neondb?sslmode=verify-full'
-NEXT_PUBLIC_SITE_URL='http://localhost:3000'   # absolute URLs for share images
+NEXT_PUBLIC_SITE_URL='http://localhost:3000'
+STUDIO_PASSCODE='a-long-random-string'
 ```
 
 Health check: `GET /api/health` returns `{"status":"ok","database":"connected"}`.
@@ -71,38 +102,27 @@ Health check: `GET /api/health` returns `{"status":"ok","database":"connected"}`
 
 `src/db/schema.ts`
 
-- `tracks`: slug, title, artist, duration, hook second, Spotify track id, artwork, preview, credits, release links, related tracks, optional approved live update, optional stems.
-- `notes`: track, second (`t`), kind (`sound`, `lyrics`, `production`), title, body, credits, optional stem layers to solo, `status` (`draft`, `in_review`, `approved`), who approved and when.
-- `follows`: track, the moment the fan was on, contact, city, ticket intent, consent, time.
-
-Rules:
-- Fans see `approved` notes only.
-- Editing an approved note sends it back to `in_review`, because approval covers the exact words.
-- The CSV export leaves out contacts: promoters get demand, not people's details.
-
-## Adding a track
-
-1. Add a row to `tracks` (or extend `src/lib/seed.ts` and run `npm run db:seed`) with the Spotify track id, artwork and release links.
-2. Write notes in `/studio` and approve them.
-3. Share `/t/<slug>/m/<seconds>` links.
-
-For a track with cleared stems, leave `spotify_track_id` empty and fill `stems`; the page switches to the stem player and notes with `layers` get a "Hear this layer alone" button.
+- `tracks`: slug, title, artist, year, duration, hook second, Spotify track id, artwork, preview, credits, release links, related tracks, live update (`{title, body, approved}`), optional stems.
+- `notes`: track, second (`t`), kind, title, body, credits, optional stem layers, `status` (`draft`, `in_review`, `approved`), who approved and when.
+- `follows`: kept from an earlier version; nothing writes to it now.
 
 ## Project layout
 
 ```
-src/app/page.tsx                 landing
-src/app/t/[slug]/...             track page, moment links, share image
-src/app/studio/page.tsx          note approval
-src/app/team/...                 demand view and CSV export
-src/app/actions.ts               follow, note status, note save (server actions)
-src/components/track-experience.tsx   track page UI and follow form
-src/components/landing/*         landing sections
-src/lib/store.ts                 all database reads and writes
-src/lib/catalogue.ts             Herman's releases (Apple artwork and previews)
-src/db/*                         schema, migrations, seed
+src/app/page.tsx                     landing
+src/app/t/[slug]/...                 track page, moment links, share image
+src/app/studio/                      Studio (sign-in, forms)
+src/app/actions.ts                   every write, each behind requireTeam()
+src/lib/auth.ts                      Studio session
+src/lib/store.ts                     all database reads and writes
+src/lib/catalogue.ts                 releases (Apple artwork and previews)
+src/lib/stats.ts                     Spotify numbers, dated
+src/lib/platforms.tsx                official profiles and brand marks
+src/components/track-experience.tsx  track page
+src/components/landing/*             landing sections
+src/components/follow.tsx            follow + live update
 ```
 
 ## Deploy
 
-The repo is connected to Vercel (`herman-planet`). Set `DATABASE_URL`, `DATABASE_URL_UNPOOLED` and `NEXT_PUBLIC_SITE_URL` in the project, then push to `main` or run `vercel deploy --prod`.
+The repo is connected to Vercel (`herman-planet`). Set `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `NEXT_PUBLIC_SITE_URL` and `STUDIO_PASSCODE` in the project, then push to `main` or run `vercel deploy --prod`.

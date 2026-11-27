@@ -1,7 +1,10 @@
 import Link from "next/link";
+import { PlatformIcon } from "@/lib/platforms";
 import { ArrowUpRight } from "lucide-react";
 import type { Note, Track } from "@/lib/types";
+import { ShareSheet } from "@/components/ui/share-sheet";
 import { CandyLink } from "./candy-link";
+import { ReleaseCover } from "./release-cover";
 
 const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 const DOT = { sound: "#ffcf8a", lyrics: "#f6a19a", production: "#c9b7f2" } as const;
@@ -9,10 +12,7 @@ const DOT = { sound: "#ffcf8a", lyrics: "#f6a19a", production: "#c9b7f2" } as co
 export function LatestRelease({ track, notes }: { track: Track; notes: Note[] }) {
   return (
     <section id="listen" className="mx-auto grid w-full max-w-6xl items-center gap-10 px-6 py-24 md:grid-cols-2 md:gap-16 md:px-8">
-      <div className="surface p-2">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={track.artworkUrl ?? ""} alt={`${track.title} cover art`} className="aspect-square w-full rounded-[13px] object-cover" />
-      </div>
+      <ReleaseCover src={track.artworkUrl ?? ""} alt={`${track.title} cover art`} />
       <div>
         <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">New single · {track.year}</p>
         <h2 className="mt-3 font-[family-name:var(--font-serif)] text-[clamp(56px,8vw,112px)] leading-[0.9] tracking-[-0.02em]">{track.title}</h2>
@@ -23,10 +23,11 @@ export function LatestRelease({ track, notes }: { track: Track; notes: Note[] })
           <CandyLink href={`/t/${track.slug}`}>Listen</CandyLink>
           {track.releases.filter((r) => r.href).map((r) => (
             <a key={r.platform} href={r.href!} target="_blank" rel="noopener noreferrer"
-              className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-line bg-surface px-4 text-sm font-medium hover:border-ink/30">
-              {r.platform} <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground" />
+              className="press inline-flex min-h-11 items-center gap-2 rounded-full border border-line bg-surface px-4 text-sm font-medium hover:border-ink/30">
+              <PlatformIcon name={r.platform} /> {r.platform}
             </a>
           ))}
+          <ShareSheet url={`${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/t/${track.slug}`} title={`Share ${track.title}`} theme="light" variant="compact" />
         </div>
         {notes.length > 0 && (
           <div className="mt-10 border-t border-line pt-6">

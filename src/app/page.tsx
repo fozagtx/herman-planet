@@ -6,52 +6,51 @@ import { LatestRelease } from "@/components/landing/latest-release";
 import { Lines } from "@/components/landing/lines";
 import { Music } from "@/components/landing/music";
 import { Video } from "@/components/landing/video";
-import { FollowForm } from "@/components/track-experience";
+import { Follow } from "@/components/follow";
+import { Bio } from "@/components/landing/bio";
+import { Since } from "@/components/landing/since";
+import { Stats } from "@/components/landing/stats";
 import { CATALOGUE } from "@/lib/catalogue";
+import { PLATFORMS } from "@/lib/platforms";
 import { getApprovedNotes, getTrack } from "@/lib/store";
 
 const SLUG = "she-get";
 
-const HERO_IMAGES = ["/img/herman.jpg", ...CATALOGUE.slice(0, 3).map((c) => c.art), "/img/herman.jpg", ...CATALOGUE.slice(3, 6).map((c) => c.art)];
+const SHE_GET = CATALOGUE[0];
+const HERO_ITEMS = [
+  { src: "/img/herman.jpg", title: "She Get", preview: SHE_GET.preview, href: SHE_GET.spotify ?? SHE_GET.apple },
+  ...CATALOGUE.slice(0, 4),
+  { src: "/img/herman.jpg", title: "She Get", preview: SHE_GET.preview, href: SHE_GET.spotify ?? SHE_GET.apple },
+  ...CATALOGUE.slice(4),
+].map((c) => ("art" in c ? { src: c.art, title: c.title, preview: c.preview, href: c.spotify ?? c.apple } : c));
 
-const SOCIALS = [
-  { label: "Spotify", href: "https://open.spotify.com/artist/795E5FXQUgbjuPBxk6igGm" },
-  { label: "Apple Music", href: "https://music.apple.com/us/artist/herman-suede/1301306379" },
-  { label: "YouTube", href: "https://www.youtube.com/HermanSuede" },
-  { label: "Instagram", href: "https://www.instagram.com/hermansuede1/" },
-  { label: "X", href: "https://x.com/hermansuede" },
-  { label: "SoundCloud", href: "https://soundcloud.com/hermansuede" },
-  { label: "Audiomack", href: "https://audiomack.com/hermansuede" },
-];
 
 export default function Home() {
   return (
     <main className="flex w-full flex-1 flex-col">
-      <Hero images={HERO_IMAGES} />
+      <Hero items={HERO_ITEMS} />
       <Suspense fallback={<div className="mx-auto my-24 h-[520px] w-full max-w-6xl animate-pulse rounded-[15px] bg-sunk" />}>
         <Release />
       </Suspense>
       <Music />
-      <div className="pt-24" />
+      <div className="px-6 md:px-8">
+        <Stats />
+      </div>
+      <Bio />
       <Lines />
+      <Since />
       <Video />
-      <section id="signup" className="mx-auto grid w-full max-w-6xl gap-10 px-6 pb-24 md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] md:px-8">
-        <div>
-          <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Shows</p>
-          <h2 className="mt-3 font-[family-name:var(--font-serif)] text-[clamp(44px,6vw,80px)] leading-[0.95]">No dates yet.</h2>
-          <p className="mt-5 max-w-sm text-[17px] leading-relaxed text-ink/75">
-            Tell us your city. When Herman plays near you, you hear first.
-          </p>
-        </div>
-        <FollowForm slug={SLUG} momentT={null} artist="Herman Suede" />
-      </section>
+      <Suspense fallback={null}>
+        <FollowData />
+      </Suspense>
       <Closing />
       <footer className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-6 pb-28 pt-10 text-[13px] text-muted-foreground md:px-8">
         <span>Herman Suede · Accra</span>
-        <nav className="flex flex-wrap gap-x-5 gap-y-2">
-          {SOCIALS.map((s) => (
-            <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="hover:text-ink">
-              {s.label}
+        <nav aria-label="Herman Suede elsewhere" className="flex flex-wrap gap-1">
+          {PLATFORMS.map(({ label, href, Icon }) => (
+            <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label} title={label}
+              className="flex h-11 w-11 items-center justify-center rounded-full text-ink/60 transition-colors hover:bg-sunk hover:text-ink">
+              <Icon className="h-[18px] w-[18px]" />
             </a>
           ))}
         </nav>
@@ -59,6 +58,11 @@ export default function Home() {
       <Dock />
     </main>
   );
+}
+
+async function FollowData() {
+  const track = await getTrack(SLUG);
+  return <Follow liveUpdate={track?.liveUpdate} />;
 }
 
 async function Release() {

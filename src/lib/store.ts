@@ -1,8 +1,8 @@
 import "server-only";
 import { and, asc, eq } from "drizzle-orm";
 import { connection } from "next/server";
-import { db, follows, notes, tracks } from "@/db";
-import type { Follow, Note, Track } from "./types";
+import { db, notes, tracks } from "@/db";
+import type { Note, Track } from "./types";
 
 type NoteRow = typeof notes.$inferSelect;
 
@@ -44,16 +44,6 @@ export async function getAllNotes(): Promise<Note[]> {
   return rows.map(toNote);
 }
 
-export async function getFollows(): Promise<Follow[]> {
-  await connection();
-  const rows = await db.select().from(follows).orderBy(asc(follows.createdAt));
-  return rows.map((r) => ({ ...r, createdAt: r.createdAt.toISOString() }));
-}
-
-export async function addFollow(f: Omit<Follow, "id" | "createdAt">) {
-  await db.insert(follows).values(f);
-}
-
 export async function updateNote(id: string, patch: Partial<Omit<typeof notes.$inferInsert, "id">>) {
   const res = await db.update(notes).set(patch).where(eq(notes.id, id)).returning({ id: notes.id });
   if (res.length === 0) throw new Error("Note not found");
@@ -61,4 +51,13 @@ export async function updateNote(id: string, patch: Partial<Omit<typeof notes.$i
 
 export async function createNote(n: Omit<Note, "id">) {
   await db.insert(notes).values({ ...n, id: `n-${crypto.randomUUID().slice(0, 8)}` });
+}
+
+export async function updateTrack(slug: string, patch: Partial<Omit<typeof tracks.$inferInsert, "slug">>) {
+  const res = await db.update(tracks).set(patch).where(eq(tracks.slug, slug)).returning({ slug: tracks.slug });
+  if (res.length === 0) throw new Error("Track not found");
+}
+
+export async function createTrack(row: typeof tracks.$inferInsert) {
+  await db.insert(tracks).values(row);
 }

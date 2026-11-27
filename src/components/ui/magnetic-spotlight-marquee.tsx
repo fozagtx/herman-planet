@@ -13,6 +13,12 @@ interface MagneticSpotlightMarqueeProps {
   navEmail?: string;
   navLinks?: string;
   footerText?: string;
+  /** Called with the index into `images` when a card is clicked. */
+  onItemClick?: (index: number) => void;
+  /** Accessible label per image (same order as `images`). */
+  itemLabels?: string[];
+  /** Index into `images` of the card currently playing, if any. */
+  activeIndex?: number | null;
 }
 
 const config = {
@@ -61,12 +67,16 @@ export function MagneticSpotlightMarquee({
   paragraphs = DEFAULT_PARAGRAPHS,
   navEmail = "hello@vengeance.ui",
   navLinks = "Documentation, Components, GitHub",
+  onItemClick,
+  itemLabels,
+  activeIndex = null,
   footerText = "We navigate in no-nonsense environments pushing the boundaries of web design. Whether you're a startup or a global leader, building a new identity or interactive platform, Vengeance UI is your partner in innovation. Our premium components ensure that every project feels magical, collaborative, and smooth.",
 }: MagneticSpotlightMarqueeProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const marqueeStripRef = useRef<HTMLDivElement>(null);
   const marqueeTrackRef = useRef<HTMLDivElement>(null);
   const contentWrapperRef = useRef<HTMLDivElement>(null);
+  const tweenRef = useRef<gsap.core.Tween | null>(null);
 
   // State to hold cloned images to fill width
   const [clonedImages, setClonedImages] = useState<string[]>(images);
@@ -93,7 +103,7 @@ export function MagneticSpotlightMarquee({
     // Wait for React to render clones, then animate
     const ctx = gsap.context(() => {
       setTimeout(() => {
-         gsap.to(marqueeTrack, {
+         tweenRef.current = gsap.to(marqueeTrack, {
            x: `-${oneSetWidth}px`,
            duration: oneSetWidth / 600, // Hardcoded even faster speed (600)
            ease: "none",
@@ -248,20 +258,44 @@ export function MagneticSpotlightMarquee({
         className="spotlight-marquee absolute left-0 w-full z-20 h-[160px] md:h-[200px] pointer-events-none"
         style={{ top: 0 }} 
       >
-        <div 
-          ref={marqueeTrackRef} 
-          className="spotlight-marquee-track flex gap-4 h-full items-center absolute top-0 left-0"
+        <div
+          ref={marqueeTrackRef}
+          className="spotlight-marquee-track pointer-events-auto flex gap-4 h-full items-center absolute top-0 left-0"
+          onMouseEnter={() => tweenRef.current?.pause()}
+          onMouseLeave={() => tweenRef.current?.play()}
         >
-          {clonedImages.map((img, idx) => (
-            <div key={idx} className="w-[140px] h-[140px] md:w-[180px] md:h-[180px] shrink-0 rounded-[20px] overflow-hidden shadow-sm bg-neutral-100 dark:bg-neutral-900">
-              <img
-                src={img}
-                alt="Marquee item"
-                className="w-full h-full object-cover"
-                loading="lazy"
-              />
-            </div>
-          ))}
+          {clonedImages.map((img, idx) => {
+            const i = idx % images.length;
+            const label = itemLabels?.[i] ?? "Marquee item";
+            const on = activeIndex === i;
+            return (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => onItemClick?.(i)}
+                aria-label={onItemClick ? `Play ${label}` : label}
+                title={label}
+                className={cn(
+                  "group relative w-[140px] h-[140px] md:w-[180px] md:h-[180px] shrink-0 rounded-[20px] overflow-hidden shadow-sm bg-neutral-100 dark:bg-neutral-900 transition-transform duration-300 ease-out hover:-translate-y-1.5 hover:scale-[1.06] hover:shadow-xl focus-visible:outline-2 focus-visible:outline-offset-2",
+                  on && "ring-4 ring-[#edff00] ring-offset-2 ring-offset-transparent",
+                  onItemClick ? "cursor-pointer" : "cursor-default",
+                )}
+              >
+                <img src={img} alt={label} className="w-full h-full object-cover" loading="lazy" draggable={false} />
+                {onItemClick ? (
+                  <span className={cn("absolute inset-0 flex items-center justify-center bg-black/35 transition-opacity duration-200", on ? "opacity-100" : "opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100")}>
+                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/95 text-black shadow-lg">
+                      {on ? (
+                        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></svg>
+                      ) : (
+                        <svg viewBox="0 0 24 24" className="h-5 w-5 translate-x-[1px]" fill="currentColor" aria-hidden><path d="M8 5.5v13a1 1 0 0 0 1.5.86l11-6.5a1 1 0 0 0 0-1.72l-11-6.5A1 1 0 0 0 8 5.5Z" /></svg>
+                      )}
+                    </span>
+                  </span>
+                ) : null}
+              </button>
+            );
+          })}
         </div>
       </div>
 

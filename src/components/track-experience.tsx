@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
-import { ArrowLeft, ArrowUpRight, BadgeCheck, Headphones, Link2, Pause, Play, Volume2 } from "lucide-react";
-import { followAction, type FollowState } from "@/app/actions";
-import { CATALOGUE } from "@/lib/catalogue";
+import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
+import { ArrowLeft, BadgeCheck, Headphones, Pause, Play, Volume2 } from "lucide-react";
+import { PlatformIcon } from "@/lib/platforms";
+import { ShareSheet } from "@/components/ui/share-sheet";
+import { Follow } from "./follow";
+import { Music } from "./landing/music";
 import type { Note, NoteKind, Track } from "@/lib/types";
 import { useSpotifyPlayer } from "./use-spotify-player";
 import { useStemPlayer } from "./use-stem-player";
@@ -61,7 +63,6 @@ function TrackView({ track, notes, startAt, player: p }: Props & { player: Playe
   const [active, setActive] = useState<Note | null>(() => notes.find((n) => n.t === startAt) ?? null);
   const [autoNotes, setAutoNotes] = useState(true);
   const [started, setStarted] = useState(false);
-  const [copied, setCopied] = useState<number | null>(null);
   const lastT = useRef(0);
   const entry = startAt ?? track.hookAt;
 
@@ -89,57 +90,49 @@ function TrackView({ track, notes, startAt, player: p }: Props & { player: Playe
     p.seek(entry);
   };
 
-  const share = async (t: number) => {
-    const url = `${location.origin}/t/${track.slug}/m/${Math.round(t)}`;
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: `${track.title} · ${track.artist} · ${fmt(t)}`, url });
-        return;
-      } catch {}
-    }
-    await navigator.clipboard.writeText(url);
-    setCopied(t);
-    setTimeout(() => setCopied(null), 1800);
-  };
-
   const pct = (t: number) => `${Math.min(100, (t / p.duration) * 100)}%`;
-  const more = CATALOGUE.filter((r) => r.title !== track.title).slice(0, 4);
+  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "";
 
   return (
     <div className="min-h-svh bg-paper text-ink">
-      <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5 md:px-8">
+      <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3 md:px-8 md:py-5">
         <Link href="/" className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-ink/70 hover:text-ink">
           <ArrowLeft className="h-4 w-4" /> {track.artist}
         </Link>
         <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Behind the Hook</span>
       </header>
 
-      <div className="mx-auto grid max-w-6xl gap-10 px-5 pb-24 md:grid-cols-[minmax(0,360px)_minmax(0,1fr)] md:gap-14 md:px-8">
+      <div className="mx-auto grid max-w-6xl gap-8 px-5 pb-20 md:grid-cols-[minmax(0,360px)_minmax(0,1fr)] md:gap-14 md:px-8">
         {/* Left: the record */}
         <aside className="self-start md:sticky md:top-6">
-          <div className="surface overflow-hidden p-2">
-            {track.artworkUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={track.artworkUrl} alt={`${track.title} cover art`} className="aspect-square w-full rounded-[13px] object-cover" />
-            ) : (
-              <div className="aspect-square w-full rounded-[13px] bg-sunk" />
-            )}
+          {/* Mobile first: small cover beside the title; full cover from md up. */}
+          <div className="flex items-end gap-4 md:block">
+            <div className="surface w-28 shrink-0 overflow-hidden p-1.5 md:w-full md:p-2">
+              {track.artworkUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={track.artworkUrl} alt={`${track.title} cover art`} className="aspect-square w-full rounded-[11px] object-cover md:rounded-[13px]" />
+              ) : (
+                <div className="aspect-square w-full rounded-[13px] bg-sunk" />
+              )}
+            </div>
+            <div className="min-w-0 pb-1 md:pb-0">
+              <h1 className="text-[34px] font-semibold leading-none tracking-[-0.04em] md:mt-6 md:text-[44px]">{track.title}</h1>
+              <p className="mt-2 text-[14px] text-muted-foreground md:text-[15px]">
+                {track.artist} · {track.year} · <span className="num">{fmt(p.duration)}</span>
+              </p>
+            </div>
           </div>
-          <h1 className="mt-6 text-[44px] font-semibold leading-none tracking-[-0.04em]">{track.title}</h1>
-          <p className="mt-2 text-[15px] text-muted-foreground">
-            {track.artist} · {track.year} · <span className="num">{fmt(p.duration)}</span>
-          </p>
 
           <div className="mt-6 flex items-center gap-3">
             {!started ? (
               <button onClick={begin} disabled={p.status !== "ready"}
-                className="inline-flex min-h-12 items-center gap-2.5 rounded-full bg-ink px-6 text-[15px] font-medium text-surface hover:bg-ink/85 disabled:opacity-50">
+                className="press inline-flex min-h-12 items-center gap-2.5 rounded-full bg-ink px-6 text-[15px] font-medium text-surface hover:bg-ink/85 disabled:opacity-50">
                 <Play className="h-4 w-4 fill-current" />
                 {p.status === "loading" ? "Loading player" : p.status === "error" ? "Player unavailable" : `Play from ${fmt(entry)}`}
               </button>
             ) : (
               <button onClick={p.toggle} aria-label={p.playing ? "Pause" : "Play"}
-                className="flex h-12 w-12 items-center justify-center rounded-full bg-ink text-surface hover:bg-ink/85">
+                className="press flex h-12 w-12 items-center justify-center rounded-full bg-ink text-surface hover:bg-ink/85">
                 {p.playing ? <Pause className="h-5 w-5 fill-current" /> : <Play className="h-5 w-5 fill-current" />}
               </button>
             )}
@@ -147,13 +140,17 @@ function TrackView({ track, notes, startAt, player: p }: Props & { player: Playe
           </div>
 
           {p.embed && <div className="mt-5">{p.embed}</div>}
-          {p.previewNote && <p className="mt-2 text-xs text-muted-foreground">{p.previewNote}</p>}
+          {p.status === "error" ? (
+            <p className="mt-2 text-xs text-alert">The Spotify player didn&apos;t load. Use the Spotify button below to listen.</p>
+          ) : (
+            p.previewNote && <p className="mt-2 text-xs text-muted-foreground">{p.previewNote}</p>
+          )}
 
-          <div className="mt-6 flex flex-wrap gap-2">
+          <div className="mt-6 grid grid-cols-3 gap-2">
             {track.releases.filter((r) => r.href).map((r) => (
               <a key={r.platform} href={r.href!} target="_blank" rel="noopener noreferrer"
-                className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-line bg-surface px-4 text-sm font-medium hover:border-ink/30">
-                {r.platform} <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground" />
+                className="press inline-flex min-h-11 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-line bg-surface px-2 text-[13px] font-medium hover:border-ink/30">
+                <PlatformIcon name={r.platform} /> {r.platform}
               </a>
             ))}
           </div>
@@ -162,8 +159,8 @@ function TrackView({ track, notes, startAt, player: p }: Props & { player: Playe
         {/* Right: inside the song */}
         <main className="min-w-0">
           <section>
-            <div className="flex items-end justify-between gap-4">
-              <h2 className="text-[28px] font-semibold tracking-tight">Inside the song</h2>
+            <div className="flex flex-col gap-1 md:flex-row md:items-end md:justify-between md:gap-4">
+              <h2 className="text-[24px] font-semibold tracking-tight md:text-[28px]">Inside the song</h2>
               <label className="flex min-h-11 items-center gap-2 text-[13px] text-muted-foreground">
                 <input type="checkbox" checked={autoNotes} onChange={(e) => setAutoNotes(e.target.checked)} className="h-4 w-4 accent-[#1d1730]" />
                 Open moments as it plays
@@ -171,23 +168,31 @@ function TrackView({ track, notes, startAt, player: p }: Props & { player: Playe
             </div>
 
             {/* Timeline */}
-            <div className="relative mt-6 pt-7">
+            <div className="relative mt-3 md:mt-6 md:pt-7">
               <div className="relative h-11">
                 {notes.map((n) => (
                   <button key={n.id} onClick={() => jump(n)} aria-label={`Jump to ${fmt(n.t)}: ${n.title}`}
                     className="group absolute bottom-0 flex h-11 w-11 -translate-x-1/2 items-end justify-center pb-1" style={{ left: pct(n.t) }}>
-                    <span className={`block rounded-full ring-2 ring-paper transition-all ${active?.id === n.id ? "h-4 w-4" : "h-3 w-3 group-hover:h-4 group-hover:w-4"}`}
+                    <span className={`block rounded-full ring-2 ring-paper transition-[width,height] duration-150 ${active?.id === n.id ? "h-4 w-4" : "h-3 w-3 group-hover:h-4 group-hover:w-4"}`}
                       style={{ background: KIND[n.kind].color }} />
                   </button>
                 ))}
               </div>
-              <div className="relative h-1.5 cursor-pointer rounded-full bg-sunk"
+              <div role="slider" aria-label="Seek" aria-valuemin={0} aria-valuemax={Math.round(p.duration)} aria-valuenow={Math.round(p.time)}
+                aria-valuetext={`${fmt(p.time)} of ${fmt(p.duration)}`} tabIndex={0}
+                className="-my-3 cursor-pointer py-3"
+                onKeyDown={(e) => {
+                  if (e.key === "ArrowRight") { setStarted(true); p.seek(Math.min(p.duration, p.time + 5)); }
+                  if (e.key === "ArrowLeft") { setStarted(true); p.seek(Math.max(0, p.time - 5)); }
+                }}
                 onClick={(e) => {
                   const r = e.currentTarget.getBoundingClientRect();
                   setStarted(true);
                   p.seek(((e.clientX - r.left) / r.width) * p.duration);
                 }}>
-                <div className="absolute inset-y-0 left-0 rounded-full bg-ink transition-[width] duration-150" style={{ width: pct(p.time) }} />
+                <div className="relative h-1.5 rounded-full bg-sunk">
+                  <div className="absolute inset-y-0 left-0 rounded-full bg-ink transition-[width] duration-150" style={{ width: pct(p.time) }} />
+                </div>
               </div>
               <div className="num mt-2 flex justify-between text-xs text-muted-foreground">
                 <span>{fmt(p.time)}</span>
@@ -209,7 +214,7 @@ function TrackView({ track, notes, startAt, player: p }: Props & { player: Playe
                       <span className="text-xs text-muted-foreground">{KIND[n.kind].label}</span>
                     </button>
                     {open && (
-                      <div className="px-4 pb-4 pl-[5.25rem] animate-in fade-in">
+                      <div className="px-4 pb-4 animate-in fade-in md:pl-[5.25rem]">
                         <p className="max-w-prose text-[15px] leading-relaxed text-ink/80">{n.body}</p>
                         {n.credits.length > 0 && <p className="mt-2 text-[13px] text-muted-foreground">{n.credits.join(" · ")}</p>}
                         <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -220,9 +225,7 @@ function TrackView({ track, notes, startAt, player: p }: Props & { player: Playe
                               {soloOn ? "Back to full mix" : "Hear this layer alone"}
                             </button>
                           ) : null}
-                          <button onClick={() => share(n.t)} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-line bg-surface px-4 text-sm font-medium">
-                            <Link2 className="h-4 w-4" /> {copied === n.t ? "Link copied" : `Share ${fmt(n.t)}`}
-                          </button>
+                          <ShareSheet url={`${base}/t/${track.slug}/m/${n.t}`} title={`Share ${track.title} at ${fmt(n.t)}`} theme="light" variant="compact" />
                           <Provenance note={n} />
                         </div>
                       </div>
@@ -235,7 +238,7 @@ function TrackView({ track, notes, startAt, player: p }: Props & { player: Playe
 
           <section className="mt-14 border-t border-line pt-8">
             <h3 className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Credits</h3>
-            <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
+            <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3 lg:grid-cols-5">
               {track.credits.map((c) => (
                 <div key={c.role}>
                   <dt className="text-[13px] text-muted-foreground">{c.role}</dt>
@@ -245,34 +248,12 @@ function TrackView({ track, notes, startAt, player: p }: Props & { player: Playe
             </dl>
           </section>
 
-          {track.liveUpdate?.approved && (
-            <section className="surface mt-10 p-5">
-              <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Live</p>
-              <p className="mt-1 text-lg font-semibold">{track.liveUpdate.title}</p>
-              <p className="mt-1 text-[15px] text-muted-foreground">{track.liveUpdate.body}</p>
-            </section>
-          )}
 
-          <section className="mt-14 border-t border-line pt-8">
-            <h3 className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">More from {track.artist.split(" ")[0]}</h3>
-            <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
-              {more.map((r) => (
-                <a key={r.title} href={r.spotify ?? r.apple} target="_blank" rel="noopener noreferrer" className="group">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={r.art} alt={`${r.title} cover`} loading="lazy"
-                    className="aspect-square w-full rounded-[13px] object-cover shadow-[0_10px_28px_-14px_rgba(29,23,48,0.45)] transition-transform group-hover:-translate-y-0.5" />
-                  <p className="mt-2 truncate text-sm font-medium">{r.title}</p>
-                  <p className="text-xs text-muted-foreground">{r.year} · {r.from}</p>
-                </a>
-              ))}
-            </div>
-          </section>
-
-          <section id="follow" className="mt-14 border-t border-line pt-8">
-            <FollowForm slug={track.slug} momentT={active?.t ?? startAt} artist={track.artist} />
-          </section>
         </main>
       </div>
+
+      <Music tone="paper" id="more" kicker="Keep listening" heading={`More from ${track.artist.split(" ")[0]}`} exclude={track.title} />
+      <Follow liveUpdate={track.liveUpdate} />
     </div>
   );
 }
@@ -285,46 +266,5 @@ function Provenance({ note }: { note: Note }) {
     <span className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-ink px-2.5 py-1 text-[11px] font-medium uppercase tracking-wider text-[#edff00]">
       <BadgeCheck className="h-3.5 w-3.5" /> Approved by {note.approvedBy}
     </span>
-  );
-}
-
-export function FollowForm({ slug, momentT, artist }: { slug: string; momentT: number | null; artist: string }) {
-  const [state, action, pending] = useActionState<FollowState, FormData>(followAction, null);
-  const first = artist.split(" ")[0];
-  if (state?.ok) {
-    return (
-      <div className="surface p-6">
-        <p className="text-xl font-semibold tracking-tight">You&apos;re on the list.</p>
-        <p className="mt-1 text-[15px] text-muted-foreground">{state.message}</p>
-      </div>
-    );
-  }
-  return (
-    <form action={action} className="surface grid gap-4 p-6">
-      <div>
-        <p className="text-2xl font-semibold tracking-tight">Hear {first}&apos;s next drop first</p>
-        <p className="mt-1 text-[15px] text-muted-foreground">New music and show news from his team. Tell us your city so he knows where to play.</p>
-      </div>
-      <input type="hidden" name="trackSlug" value={slug} />
-      {momentT != null && <input type="hidden" name="momentT" value={Math.round(momentT)} />}
-      <div className="grid gap-2 sm:grid-cols-2">
-        <input name="contact" required placeholder="Email or phone" autoComplete="email" aria-label="Email or phone"
-          className="min-h-11 rounded-full border border-line bg-paper px-4 text-[15px] outline-none focus:border-ink/40" />
-        <input name="city" required placeholder="Your city" autoComplete="address-level2" aria-label="Your city"
-          className="min-h-11 rounded-full border border-line bg-paper px-4 text-[15px] outline-none focus:border-ink/40" />
-      </div>
-      <div className="grid gap-2 text-sm">
-        <label className="flex items-center gap-2.5">
-          <input type="checkbox" name="ticketIntent" className="h-4 w-4 accent-[#1d1730]" /> I&apos;d buy a ticket if {first} played my city
-        </label>
-        <label className="flex items-center gap-2.5">
-          <input type="checkbox" name="consent" required className="h-4 w-4 accent-[#1d1730]" /> {first}&apos;s team can message me about releases and shows
-        </label>
-      </div>
-      {state && !state.ok && <p className="text-sm font-medium text-alert">{state.message}</p>}
-      <button disabled={pending} className="min-h-11 justify-self-start rounded-full bg-ink px-6 text-[15px] font-medium text-surface hover:bg-ink/85 disabled:opacity-60">
-        {pending ? "Saving" : "Keep me posted"}
-      </button>
-    </form>
   );
 }

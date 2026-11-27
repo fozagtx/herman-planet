@@ -9,7 +9,7 @@ export function Dock() {
       items={[
         { label: "Listen", href: "/t/she-get" },
         { label: "Music", href: "#music" },
-        { label: "Sign up", href: "#signup" },
+        { label: "Follow", href: "#follow" },
       ]}
       moreLabel="More"
       columns={[
@@ -33,7 +33,6 @@ export function Dock() {
           title: "Herman's team",
           links: [
             { label: "Studio", href: "/studio" },
-            { label: "Fan demand", href: "/team" },
           ],
         },
       ]}

@@ -22,7 +22,8 @@ export const seed: Store = {
         { role: "Artist", name: "Herman Suede" },
         { role: "Producers", name: "MILN, BNYX®" },
         { role: "Mix & master", name: "realsmart" },
-        { role: "Released", name: "25 Nov 2026 · rain. labs" },
+        { role: "Released", name: "25 Nov 2026" },
+        { role: "Label", name: "rain. labs" },
       ],
       // Checked 27 Nov 2026: each returns 200 and the right page.
       releases: [
