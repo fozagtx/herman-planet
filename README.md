@@ -40,7 +40,7 @@ Herman Suede's home on the web: a track-first fan site where a listener hears a 
 - **Pick a mood:** a gear you rotate (drag, arrow keys or tap) to find songs for a mood. Moods come only from published song stories.
 - **Streams:** 3.5M+ plays and counting (Spotify top four plus Audiomack), dated, with the breakdown.
 - **Song pages for every release** (`/t/<song>`): the full song through Spotify where we have its id, Apple's official 30 second preview otherwise, timed moments, credits, the story.
-- **Live status island:** one black pill at the top (islandcn) shows what's playing, opens like an iPhone's when a song starts, and shows each save in Studio.
+- **Live status island:** one black pill at the top (islandcn) shows what's playing, opens like an iPhone's when a song starts, and shows each save in Studio. **Tap it** (even when nothing plays) and a music card drops down with every song: tap one to play, see progress, open its song page.
 - **Follow:** Spotify, Apple Music, YouTube, Instagram, and the next show or meetup.
 
 **The Pack** (`/pack`), from Herman's own review

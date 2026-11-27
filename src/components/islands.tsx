@@ -29,13 +29,18 @@ type PlayingProps = {
   time: number;
   duration: number;
   onToggle: () => void;
+  /** Tap on the island: e.g. open the music card. */
+  onPress?: () => void;
+  /** Don't pop open on a new song (the music card already shows it). */
+  quiet?: boolean;
 };
 
 /**
  * Something of Herman's is playing: a preview from the site, or the song on the track page.
  * Compact shows the cover and the clock; expanded shows the title, a play/pause and the bar.
  */
-export const PlayingIsland = ({ id, title, subtitle, art, playing, time, duration, onToggle }: PlayingProps) => {
+export const PlayingIsland = ({ id, title, subtitle, art, playing, time, duration, onToggle, onPress, quiet = false }: PlayingProps) => {
+  const press = useLatest(onPress);
   const toggle = useLatest(onToggle);
   const sec = Math.floor(time);
   const progress = duration > 0 ? Math.min(1, time / duration) : 0;
@@ -53,6 +58,7 @@ export const PlayingIsland = ({ id, title, subtitle, art, playing, time, duratio
       return {
         id,
         group: "music",
+        onPress: () => press.current?.(),
         label: `${title}, ${subtitle}, ${playing ? "playing" : "paused"} at ${fmt(sec)}`,
         compact: { leading: cover, trailing: clock },
         minimal: <MinimalPair leading={cover} trailing={clock} />,
@@ -87,8 +93,8 @@ export const PlayingIsland = ({ id, title, subtitle, art, playing, time, duratio
   useEffect(() => {
     if (!playing || !controls.id || shown.current === title) return;
     shown.current = title;
-    controls.alert();
-  }, [playing, title, controls]);
+    if (!quiet) controls.alert();
+  }, [playing, title, controls, quiet]);
   return null;
 };
 
