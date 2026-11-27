@@ -6,7 +6,9 @@ import { isTeam } from "@/lib/auth";
 import { paymentsOn } from "@/lib/bachs";
 import { countSamples, getAllGiveaways, getAllItems, getAllPosts, getOrders, getPackName } from "@/lib/pack";
 import { IslandSubmit, SignInForm } from "../forms";
-import { DrawWinner, GiveawayEditor, ItemEditor, PackNameForm } from "./forms";
+import { DrawWinner, EventEditor, GiveawayEditor, ItemEditor, PackNameForm } from "./forms";
+import { eventStatus, removeEvent, ticketStatus } from "@/app/event-actions";
+import { getAllEvents } from "@/lib/events";
 
 export const metadata = { title: "Studio · The Pack", robots: { index: false } };
 
@@ -37,7 +39,7 @@ function Panel({ title, hint, children }: { title: string; hint: string; childre
 
 async function Body() {
   if (!(await isTeam())) return <SignInForm />;
-  const [name, posts, giveaways, items, orders, samples] = await Promise.all([getPackName(), getAllPosts(), getAllGiveaways(), getAllItems(), getOrders(), countSamples()]);
+  const [name, posts, giveaways, items, orders, samples, eventList] = await Promise.all([getPackName(), getAllPosts(), getAllGiveaways(), getAllItems(), getOrders(), countSamples(), getAllEvents()]);
   const newOrders = orders.filter((o) => o.status === "new");
   const pending = posts.filter((p) => p.status === "pending");
   return (
@@ -93,6 +95,60 @@ async function Body() {
             ))}
           </ul>
         )}
+      </Panel>
+
+      <Panel title={`Shows & meetups · ${eventList.filter((e) => e.status === "live").length} taking bookings`} hint="Paid events: fans pay with Bachs or you contact them. Free meetups are an RSVP. Capacity is enforced, so a show can't oversell.">
+        {eventList.length > 0 && (
+          <ul className="mb-5 space-y-3">
+            {eventList.map((e) => (
+              <li key={e.id} className="rounded-[13px] border border-line bg-paper/60 p-4">
+                <p className="font-medium">{e.title} <span className="text-muted-foreground">· {e.kind} · {e.venue}, {e.city}</span></p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {fmtDate(e.startsAt)} · <b>{e.status}</b> · <span className="num">{e.sold}</span>{e.capacity ? ` / ${e.capacity}` : ""} places taken · {e.price ?? "Free"}{e.amount ? ` (Bachs ${e.amount} ${e.currency})` : ""}{e.sample ? " · sample" : ""}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <form action={eventStatus}>
+                    <input type="hidden" name="id" value={e.id} />
+                    <input type="hidden" name="status" value={e.status === "live" ? "closed" : "live"} />
+                    <IslandSubmit what={e.title} done={e.status === "live" ? "Closed" : "Live"} className={`${pill} ${e.status === "live" ? "border border-line bg-surface hover:border-ink/30" : "bg-ink text-surface hover:bg-ink/85"}`}>
+                      {e.status === "live" ? "Close bookings" : "Open bookings"}
+                    </IslandSubmit>
+                  </form>
+                </div>
+                {e.tickets.length > 0 && (
+                  <ul className="mt-3 divide-y divide-line rounded-[11px] border border-line bg-surface">
+                    {e.tickets.map((t) => (
+                      <li key={t.id} className="flex flex-wrap items-center gap-2 p-3 text-sm">
+                        <span className="min-w-0 flex-1">{t.quantity} × {t.name} · {t.contact} · <b>{t.status}</b>{t.sample ? " · sample" : ""}</span>
+                        {(t.status === "new" ? (["confirmed", "paid", "cancelled"] as const) : t.status === "confirmed" ? (["paid", "cancelled"] as const) : ([] as const)).map((to) => (
+                          <form key={to} action={ticketStatus}>
+                            <input type="hidden" name="id" value={t.id} />
+                            <input type="hidden" name="status" value={to} />
+                            <IslandSubmit what="Booking" done={to === "cancelled" ? "Cancelled" : "Saved"} className={`${pill} min-h-10 px-3 ${to === "cancelled" ? "border border-line" : "bg-ink text-surface"}`}>
+                              {to === "confirmed" ? "Confirm" : to === "paid" ? "Mark paid" : "Cancel"}
+                            </IslandSubmit>
+                          </form>
+                        ))}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <details className="mt-3">
+                  <summary className="inline-flex min-h-11 cursor-pointer items-center text-sm font-medium text-muted-foreground hover:text-ink">Edit event</summary>
+                  <div className="mt-3"><EventEditor event={e} /></div>
+                  <form action={removeEvent} className="mt-4 border-t border-line pt-4">
+                    <input type="hidden" name="id" value={e.id} />
+                    <IslandSubmit what={e.title} done="Deleted" className={`${pill} border border-alert/40 bg-surface text-alert hover:border-alert`}>Delete this event</IslandSubmit>
+                  </form>
+                </details>
+              </li>
+            ))}
+          </ul>
+        )}
+        <details className="rounded-[13px] border border-line p-4" open={eventList.length === 0}>
+          <summary className="cursor-pointer text-sm font-medium">+ New show or meetup</summary>
+          <div className="mt-3"><EventEditor /></div>
+        </details>
       </Panel>
 
       <Panel title="Name" hint="Shown as the page title and across the site.">

@@ -2,7 +2,9 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { Reveal } from "@/components/reveal";
+import { TicketButton } from "@/components/pack/events";
 import { BuyButton, Countdown, GiveawayForm, WallForm } from "@/components/pack/forms";
+import { getUpcomingEvents } from "@/lib/events";
 import { CATALOGUE } from "@/lib/catalogue";
 import { paymentsOn } from "@/lib/bachs";
 import { getFeaturedPosts, getLastWinner, getLiveItems, getOpenGiveaway, getPackName } from "@/lib/pack";
@@ -41,6 +43,7 @@ export default function PackPage() {
       </Suspense>
       <Story />
       <Suspense fallback={<div className="mx-auto h-96 max-w-6xl animate-pulse rounded-[15px] bg-sunk" />}>
+        <Events />
         <Giveaway />
         <Wall />
         <Shop />
@@ -76,6 +79,7 @@ async function Hero() {
           </blockquote>
           <div className="mt-8 flex flex-wrap gap-2">
             <a href="#wall" className="press inline-flex min-h-11 items-center rounded-full bg-ink px-5 text-sm font-medium text-surface hover:bg-ink/85">Join the wall</a>
+            <a href="#events" className="press inline-flex min-h-11 items-center rounded-full border border-line bg-surface px-5 text-sm font-medium hover:border-ink/30">Shows & meetups</a>
             <a href="#giveaway" className="press inline-flex min-h-11 items-center rounded-full border border-line bg-surface px-5 text-sm font-medium hover:border-ink/30">Giveaway</a>
             <a href="#shop" className="press inline-flex min-h-11 items-center rounded-full border border-line bg-surface px-5 text-sm font-medium hover:border-ink/30">Shop</a>
           </div>
@@ -132,6 +136,54 @@ function Story() {
           </p>
         </div>
       </Reveal>
+    </section>
+  );
+}
+
+async function Events() {
+  const list = await getUpcomingEvents();
+  return (
+    <section id="events" className="mx-auto max-w-6xl px-6 pb-10 md:px-8 md:pb-16">
+      <Kicker>Shows & meetups</Kicker>
+      <h2 className="mt-3 font-[family-name:var(--font-serif)] text-[clamp(40px,5.4vw,72px)] leading-[0.95]">See him in person</h2>
+      {list.length === 0 ? (
+        <p className="mt-4 max-w-md text-[17px] leading-relaxed text-ink/75">New dates, coming soon. Follow Herman on Instagram to know the moment tickets go live.</p>
+      ) : (
+        <ul className="mt-6 grid gap-4 md:grid-cols-2">
+          {list.map((e, i) => {
+            const d = e.startsAt;
+            const tz = { timeZone: "Africa/Accra" } as const;
+            const when = d.toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", ...tz });
+            const left = e.capacity ? Math.max(0, e.capacity - e.sold) : null;
+            const free = !e.price && !e.amount;
+            return (
+              <li key={e.id}>
+                <Reveal delay={i * 0.05} className="surface flex h-full gap-4 p-3">
+                  <div className="flex w-20 shrink-0 flex-col items-center justify-center rounded-[11px] bg-ink py-3 text-surface">
+                    <span className="text-[11px] font-medium uppercase tracking-wider text-surface/60">{d.toLocaleString("en-GB", { month: "short", ...tz })}</span>
+                    <span className="num font-[family-name:var(--font-serif)] text-[40px] leading-none">{d.toLocaleString("en-GB", { day: "numeric", ...tz })}</span>
+                    <span className="mt-1 text-[11px] text-surface/60">{d.toLocaleString("en-GB", { weekday: "short", ...tz })}</span>
+                  </div>
+                  <div className="flex min-w-0 flex-1 flex-col py-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="rounded-full border border-line px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{e.kind === "show" ? "Show" : "Meetup"}</span>
+                      {e.sample && <Sample />}
+                    </div>
+                    <p className="mt-1.5 text-lg font-semibold leading-snug tracking-tight">{e.title}</p>
+                    <p className="text-[14px] text-muted-foreground">{e.venue}, {e.city} · {when.split(", ").pop()}</p>
+                    {e.details && <p className="mt-1 line-clamp-2 text-[13px] text-muted-foreground">{e.details}</p>}
+                    <div className="mt-auto flex flex-wrap items-center gap-3 pt-3">
+                      <TicketButton id={e.id} title={e.title} when={when} place={`${e.venue}, ${e.city}`} price={e.price} free={free} online={paymentsOn() && !!e.amount}
+                        sample={e.sample} left={left} kind={e.kind} />
+                      {left !== null && left > 0 && <span className="num text-[13px] text-muted-foreground">{left} left</span>}
+                    </div>
+                  </div>
+                </Reveal>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </section>
   );
 }

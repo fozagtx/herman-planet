@@ -8,6 +8,7 @@ import { Lines } from "@/components/landing/lines";
 import { MoodDial } from "@/components/landing/mood-dial";
 import { PackTeaser } from "@/components/landing/pack-teaser";
 import { getPackName } from "@/lib/pack";
+import { getUpcomingEvents } from "@/lib/events";
 import { Music } from "@/components/landing/music";
 import { Video } from "@/components/landing/video";
 import { Follow } from "@/components/follow";
@@ -76,8 +77,12 @@ async function PackData() {
 }
 
 async function FollowData() {
-  const track = await getTrack(SLUG);
-  return <Follow liveUpdate={track?.liveUpdate} />;
+  const [track, events] = await Promise.all([getTrack(SLUG), getUpcomingEvents()]);
+  const e = events[0];
+  const nextEvent = e
+    ? { title: e.sample ? `${e.title} (sample)` : e.title, when: e.startsAt.toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Africa/Accra" }), place: `${e.venue}, ${e.city}` }
+    : null;
+  return <Follow liveUpdate={track?.liveUpdate} nextEvent={nextEvent} />;
 }
 
 async function Release() {

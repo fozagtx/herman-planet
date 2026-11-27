@@ -5,7 +5,7 @@ import type { Track } from "@/lib/types";
 const FOLLOW = PLATFORMS.filter((p) => ["Spotify", "Apple Music", "Instagram", "YouTube"].includes(p.label));
 
 /** Brief step 04: follow future releases, or see an approved live update. No forms, no data kept here. */
-export function Follow({ liveUpdate }: { liveUpdate?: Track["liveUpdate"] }) {
+export function Follow({ liveUpdate, nextEvent }: { liveUpdate?: Track["liveUpdate"]; nextEvent?: { title: string; when: string; place: string } | null }) {
   return (
     <section id="follow" className="mx-auto grid w-full max-w-6xl gap-8 px-6 py-14 md:grid-cols-2 md:gap-10 md:px-8 md:py-24">
       <Reveal>
@@ -25,7 +25,13 @@ export function Follow({ liveUpdate }: { liveUpdate?: Track["liveUpdate"] }) {
       </Reveal>
       <Reveal delay={0.08} className="surface self-start p-6">
         <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Live</p>
-        {liveUpdate?.approved ? (
+        {nextEvent ? (
+          <>
+            <p className="mt-2 text-2xl font-semibold tracking-tight">{nextEvent.title}</p>
+            <p className="mt-2 text-[15px] text-muted-foreground">{nextEvent.when} · {nextEvent.place}</p>
+            <a href="/pack#events" className="press mt-4 inline-flex min-h-11 items-center rounded-full bg-ink px-5 text-sm font-medium text-surface hover:bg-ink/85">Get tickets</a>
+          </>
+        ) : liveUpdate?.approved ? (
           <>
             <p className="mt-2 text-2xl font-semibold tracking-tight">{liveUpdate.title}</p>
             <p className="mt-2 text-[15px] text-muted-foreground">{liveUpdate.body}</p>

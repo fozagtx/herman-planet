@@ -1,5 +1,6 @@
 import { BachsWebhookError, webhooks } from "@bachs/sdk";
 import { isPaidStatus } from "@/lib/bachs";
+import { getTicket, markTicketPaid } from "@/lib/events";
 import { getOrder, markPaid } from "@/lib/pack";
 
 // Bachs webhook: the source of truth for "this order is paid".
@@ -22,8 +23,13 @@ export async function POST(request: Request) {
   const paidEvent = /(succeeded|completed|paid)$/i.test(event.type) || isPaidStatus(data.status);
 
   if (orderId && paidEvent && /^[0-9a-f-]{36}$/i.test(orderId)) {
-    const order = await getOrder(orderId);
-    if (order && !order.sample) await markPaid(order.id);
+    if (meta.kind === "ticket") {
+      const ticket = await getTicket(orderId);
+      if (ticket && !ticket.sample) await markTicketPaid(ticket.id);
+    } else {
+      const order = await getOrder(orderId);
+      if (order && !order.sample) await markPaid(order.id);
+    }
   } else {
     console.info("Bachs webhook received", event.type);
   }

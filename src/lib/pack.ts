@@ -1,7 +1,7 @@
 import "server-only";
 import { and, asc, count, desc, eq, gt, inArray } from "drizzle-orm";
 import { connection } from "next/server";
-import { db, giveawayEntries, giveaways, packImages, packItems, packOrders, packPosts, siteSettings } from "@/db";
+import { db, events, giveawayEntries, giveaways, packImages, packItems, packOrders, packPosts, siteSettings } from "@/db";
 
 export type PackPost = typeof packPosts.$inferSelect;
 export type PackItem = typeof packItems.$inferSelect;
@@ -138,12 +138,14 @@ export async function removeSamples() {
   await db.delete(packPosts).where(eq(packPosts.sample, true));
   await db.delete(packItems).where(eq(packItems.sample, true));
   await db.delete(giveaways).where(eq(giveaways.sample, true));
+  await db.delete(events).where(eq(events.sample, true));
 }
 export async function countSamples(): Promise<number> {
   const [a] = await db.select({ n: count() }).from(packPosts).where(eq(packPosts.sample, true));
   const [b] = await db.select({ n: count() }).from(packItems).where(eq(packItems.sample, true));
   const [c] = await db.select({ n: count() }).from(giveaways).where(eq(giveaways.sample, true));
-  return a.n + b.n + c.n;
+  const [d] = await db.select({ n: count() }).from(events).where(eq(events.sample, true));
+  return a.n + b.n + c.n + d.n;
 }
 
 // Uploaded photos

@@ -43,6 +43,13 @@
       "when": 1795785207502,
       "tag": "0005_robust_chamber",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795785463531,
+      "tag": "0006_flowery_puck",
+      "breakpoints": true
     }
   ]
 }

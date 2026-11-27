@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { saveEventAction, type EventState } from "@/app/event-actions";
 import { pickWinner, saveGiveawayAction, savePackName, saveShopItem, type PackState } from "@/app/pack-actions";
 import { SaveIsland } from "@/components/islands";
 
@@ -72,7 +73,7 @@ async function shrink(file: File): Promise<File> {
   return new File([blob], file.name.replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" });
 }
 
-function PhotoField({ current }: { current: string | null }) {
+export function PhotoField({ current }: { current: string | null }) {
   const [preview, setPreview] = useState<string | null>(current);
   const [busy, setBusy] = useState(false);
   return (
@@ -151,6 +152,52 @@ export function ItemEditor({ item }: { item?: EditItem }) {
         <button disabled={p} className={btn}>{p ? "Saving" : item ? "Save changes" : "Add to shop"}</button>
       </div>
       <Status s={s} />
+    </form>
+  );
+}
+
+type EditEvent = {
+  id: string; kind: "show" | "meetup"; title: string; venue: string; city: string; startsAt: Date; details: string | null; imageUrl: string | null;
+  price: string | null; amount: string | null; currency: string; capacity: number | null; status: "draft" | "live" | "closed";
+};
+
+/** datetime-local value in Accra time (UTC+0), so what the team types is what fans see. */
+const toLocal = (d: Date) => d.toISOString().slice(0, 16);
+
+export function EventEditor({ event }: { event?: EditEvent }) {
+  const [s, a, p] = useActionState<EventState, FormData>(saveEventAction, null);
+  return (
+    <form action={a} className="grid gap-4">
+      <SaveIsland what={event ? event.title : "Event"} pending={p} result={s} />
+      <input type="hidden" name="id" value={event?.id ?? ""} />
+      <PhotoField current={event?.imageUrl ?? null} />
+      <div className="grid gap-3 sm:grid-cols-[140px_1fr]">
+        <label className={label}>
+          Kind
+          <select name="kind" defaultValue={event?.kind ?? "show"} className={field}>
+            <option value="show">Show</option>
+            <option value="meetup">Meetup</option>
+          </select>
+        </label>
+        <label className={label}>Title<input name="title" required maxLength={80} defaultValue={event?.title} placeholder="She Get release show" className={field} /></label>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-[1fr_1fr_190px]">
+        <label className={label}>Venue<input name="venue" required maxLength={80} defaultValue={event?.venue} className={field} /></label>
+        <label className={label}>City<input name="city" required maxLength={40} defaultValue={event?.city ?? "Accra"} className={field} /></label>
+        <label className={label}>Date and time (Accra)<input name="startsAt" type="datetime-local" required defaultValue={event ? toLocal(event.startsAt) : ""} className={field} /></label>
+      </div>
+      <label className={label}>Details (optional)<textarea name="details" rows={2} maxLength={400} defaultValue={event?.details ?? ""} className={field} /></label>
+      <div className="grid gap-3 sm:grid-cols-[1fr_1fr_90px_110px]">
+        <label className={label}>Price shown (empty = free)<input name="price" maxLength={30} defaultValue={event?.price ?? ""} placeholder="GH₵ 150" className={field} /></label>
+        <label className={label}>Amount per ticket (Bachs)<input name="amount" inputMode="decimal" maxLength={12} defaultValue={event?.amount ?? ""} placeholder="150.00" className={field} /></label>
+        <label className={label}>Currency<input name="currency" maxLength={3} defaultValue={event?.currency ?? "GHS"} className={`${field} uppercase`} /></label>
+        <label className={label}>Capacity<input name="capacity" inputMode="numeric" maxLength={6} defaultValue={event?.capacity ?? ""} placeholder="200" className={field} /></label>
+      </div>
+      <div className="flex flex-wrap items-center gap-3">
+        <label className="flex min-h-11 items-center gap-2.5 text-sm"><input type="checkbox" name="live" defaultChecked={event?.status === "live"} className="h-4 w-4 accent-[#1d1730]" /> Taking bookings</label>
+        <button disabled={p} className={btn}>{p ? "Saving" : event ? "Save changes" : "Add event"}</button>
+      </div>
+      {s && <p role="status" className={`text-sm font-medium ${s.ok ? "text-ok" : "text-alert"}`}>{s.message}</p>}
     </form>
   );
 }

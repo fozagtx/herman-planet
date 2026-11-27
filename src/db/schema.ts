@@ -189,3 +189,43 @@ export const packImages = pgTable("pack_images", {
   data: bytea("data").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
+
+// --- Shows and meetups ---
+
+export const eventKind = pgEnum("event_kind", ["show", "meetup"]);
+
+/** A show (ticketed) or a meetup (free or ticketed), created in Studio. */
+export const events = pgTable("events", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  kind: eventKind("kind").notNull(),
+  title: text("title").notNull(),
+  venue: text("venue").notNull(),
+  city: text("city").notNull(),
+  startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
+  details: text("details"),
+  imageUrl: text("image_url"),
+  /** Shown price, e.g. "GH₵ 150". Empty = free. */
+  price: text("price"),
+  /** Decimal amount Bachs charges per ticket. Empty = free or pay on contact. */
+  amount: text("amount"),
+  currency: text("currency").notNull().default("GHS"),
+  capacity: integer("capacity"),
+  status: liveStatus("status").notNull().default("draft"),
+  sample: boolean("sample").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+/** A fan's tickets or RSVP. Free events confirm straight away. */
+export const eventTickets = pgTable("event_tickets", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  eventId: uuid("event_id")
+    .notNull()
+    .references(() => events.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  contact: text("contact").notNull(),
+  quantity: integer("quantity").notNull().default(1),
+  status: orderStatus("status").notNull().default("new"),
+  checkoutId: text("checkout_id"),
+  sample: boolean("sample").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});

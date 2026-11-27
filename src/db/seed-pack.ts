@@ -4,7 +4,7 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { eq } from "drizzle-orm";
 import { Pool } from "pg";
-import { giveaways, packItems, packPosts } from "./schema";
+import { events, giveaways, packItems, packPosts } from "./schema";
 
 const SHE_GET_ART = "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/f1/0b/45/f10b4518-97a4-e002-a624-1ca898aa5f64/823375590934_Cover.jpg/600x600bb.jpg";
 const ONE_BY_ONE_ART = "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/10/3f/14/103f144f-bcd1-6e57-af10-a188e1655c9b/artwork.jpg/600x600bb.jpg";
@@ -12,9 +12,18 @@ const ONE_BY_ONE_ART = "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/10/
 async function main() {
   const pool = new Pool({ connectionString: process.env.DATABASE_URL_UNPOOLED ?? process.env.DATABASE_URL });
   const db = drizzle(pool);
+  const sampleEvents = await db.select().from(events).where(eq(events.sample, true));
+  if (!sampleEvents.length) {
+    const day = (n: number, h: number) => { const d = new Date(Date.now() + n * 86_400_000); d.setUTCHours(h, 0, 0, 0); return d; };
+    await db.insert(events).values([
+      { kind: "show", title: "She Get release show", venue: "Venue to be announced", city: "Accra", startsAt: day(21, 20), details: "Herman performs She Get live, plus the songs that built the pack.", imageUrl: SHE_GET_ART, price: "GH₵ 150", amount: "150.00", currency: "GHS", capacity: 300, status: "live", sample: true },
+      { kind: "meetup", title: "Pack meetup", venue: "Location sent to RSVPs", city: "Accra", startsAt: day(10, 16), details: "Hang out with Herman and the pack. Free, limited places.", imageUrl: "/img/herman.jpg", price: null, amount: null, currency: "GHS", capacity: 50, status: "live", sample: true },
+    ]);
+    console.log("Seeded sample show and meetup.");
+  }
   const existing = await db.select().from(packItems).where(eq(packItems.sample, true));
   if (existing.length) {
-    console.log("Samples already seeded. Remove them in Studio first to reseed.");
+    console.log("Sample wall, shop and giveaway already seeded.");
     await pool.end();
     return;
   }
