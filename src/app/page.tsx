@@ -31,6 +31,7 @@ export default function Home() {
     <main className="flex w-full flex-1 flex-col">
       <Intro />
       <Hero items={HERO_ITEMS} />
+      <Bio />
       <Suspense fallback={<div className="mx-auto my-24 h-[520px] w-full max-w-6xl animate-pulse rounded-[15px] bg-sunk" />}>
         <Release />
       </Suspense>
@@ -38,7 +39,6 @@ export default function Home() {
       <div className="px-6 md:px-8">
         <Stats />
       </div>
-      <Bio />
       <Lines />
       <Since />
       <Video />
