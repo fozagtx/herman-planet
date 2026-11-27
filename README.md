@@ -9,6 +9,8 @@ Live: https://herman-planet.vercel.app
 | `/` | Listeners | Herman's site: the new single, every release with previews, his Spotify numbers, about, lines from the song, eight years of covers, video, follow |
 | `/t/she-get` | Listeners | The track page: the real song via Spotify, timed moments, credits, more releases, follow |
 | `/t/she-get/m/42` | Shared links | Same page, opened on a marked moment (here 0:42), with its own share image |
+| `/pack` | Fans | The Pack: Herman's fan community. Wolf-led page with the fan wall, giveaways, merch and unreleased music |
+| `/t/<song>` | Listeners | A song page for every release: full song via Spotify where we have its id, Apple's official preview otherwise, with its sourced story |
 | `/studio` | Herman's team (passcode) | Approve notes, edit track details and links, publish a live update, add tracks |
 
 ## How it answers the brief
@@ -35,6 +37,17 @@ Live: https://herman-planet.vercel.app
 - **Add a track:** title, year, length, Spotify link, cover. It goes live at `/t/<title>`.
 
 Security: the session cookie holds an HMAC of the passcode, not the passcode. Every Studio server action calls `requireTeam()` first, because server actions can be called by direct POST. Rotate the passcode by changing `STUDIO_PASSCODE` and redeploying; everyone is signed out.
+
+## The Pack (from Herman's review)
+
+Herman asked for "a section dedicated to my fans and that sense of community", with lone-wolf imagery, merch, giveaways and unreleased music. `/pack` does that, run entirely from **Studio → The Pack**:
+
+- **Name:** the team sets what Herman calls his fans (shown everywhere). It defaults to "The Pack" until set.
+- **Fan wall:** fans post a note (name, optional city and song, consent to be shown). Nothing appears until the team features it.
+- **Giveaways:** the team opens one with a prize and an end date; fans enter once each; the team draws a random winner. Entries stay private; the site shows a winner's first name and city only.
+- **Shop:** merch and unreleased music, each with a price and the team's own checkout link (Paystack, Selar, Shopify, Bandcamp). This site takes no payments.
+- **Proof, sourced:** After Prep (2019) sold 1,000+ tickets and a 15-school meet-and-greet tour (The Upper Entertainment); his feature on Sarkodie's *Black Love* ("Womba", 2019, Wikipedia); his own words to fans (24 Nov 2026).
+- **Wolf art** is an original faceted wolf drawn for this site.
 
 ## What is real and what is not
 

@@ -54,11 +54,14 @@ async function Gate({ track }: { track: Promise<string | undefined> }) {
           <h1 className="text-[28px] font-semibold tracking-tight md:text-3xl">Studio</h1>
           <p className="mt-1 max-w-md text-sm text-muted-foreground">Everything fans see on the site comes from here. Nothing goes live until you approve it.</p>
         </div>
+        <div className="flex flex-wrap gap-2">
+        <Link href="/studio/pack" className="press inline-flex min-h-11 items-center rounded-full bg-ink px-4 text-sm font-medium text-surface hover:bg-ink/85">The Pack</Link>
         <form action={signOut}>
           <button className="press inline-flex min-h-11 items-center gap-2 rounded-full border border-line bg-surface px-4 text-sm font-medium hover:border-ink/30">
             <LogOut className="h-4 w-4" aria-hidden /> Sign out
           </button>
         </form>
+        </div>
       </header>
 
       {/* Track switcher */}

@@ -7,6 +7,7 @@ import {
   pgTable,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 import type { ReleaseLink, Stem, Track } from "@/lib/types";
@@ -75,4 +76,73 @@ export const follows = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (t) => [index("follows_city_idx").on(t.city)],
+);
+
+// --- The Pack: Herman's fan community ---
+
+export const packPostStatus = pgEnum("pack_post_status", ["pending", "featured", "hidden"]);
+export const packItemKind = pgEnum("pack_item_kind", ["merch", "unreleased"]);
+export const liveStatus = pgEnum("live_status", ["draft", "live", "closed"]);
+
+/** Site-wide text the team can change, e.g. the pack's name. */
+export const siteSettings = pgTable("site_settings", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+});
+
+/** A fan's note for the wall. Shown only after the team features it. */
+export const packPosts = pgTable(
+  "pack_posts",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: text("name").notNull(),
+    city: text("city"),
+    message: text("message").notNull(),
+    song: text("song"),
+    status: packPostStatus("status").notNull().default("pending"),
+    consent: boolean("consent").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [index("pack_posts_status_idx").on(t.status)],
+);
+
+/** Merch and unreleased music. Payment happens on the team's own checkout link. */
+export const packItems = pgTable("pack_items", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  kind: packItemKind("kind").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  price: text("price").notNull(),
+  imageUrl: text("image_url"),
+  previewUrl: text("preview_url"),
+  buyUrl: text("buy_url").notNull(),
+  status: liveStatus("status").notNull().default("draft"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const giveaways = pgTable("giveaways", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  title: text("title").notNull(),
+  prize: text("prize").notNull(),
+  details: text("details"),
+  endsAt: timestamp("ends_at", { withTimezone: true }).notNull(),
+  status: liveStatus("status").notNull().default("draft"),
+  winner: text("winner"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const giveawayEntries = pgTable(
+  "giveaway_entries",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    giveawayId: uuid("giveaway_id")
+      .notNull()
+      .references(() => giveaways.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    contact: text("contact").notNull(),
+    city: text("city"),
+    consent: boolean("consent").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [uniqueIndex("giveaway_entries_once_idx").on(t.giveawayId, t.contact)],
 );

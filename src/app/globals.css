@@ -256,3 +256,10 @@ html.intro-on, html.intro-on body { overflow: hidden; }
 .ticker-track { animation: ticker 28s linear infinite; }
 a:hover > .ticker-track { animation-play-state: paused; }
 @media (prefers-reduced-motion: reduce) { .ticker-track { animation: none; } }
+
+/* Pack: howl rings behind the wolf */
+@keyframes howl { from { transform: scale(0.6); opacity: 0.55; } to { transform: scale(1.6); opacity: 0; } }
+.howl-ring { animation: howl 3.6s ease-out infinite; }
+.howl-ring:nth-child(2) { animation-delay: 1.2s; }
+.howl-ring:nth-child(3) { animation-delay: 2.4s; }
+@media (prefers-reduced-motion: reduce) { .howl-ring { animation: none; opacity: 0.12; } }

@@ -15,6 +15,13 @@
       "when": 1795780405619,
       "tag": "0001_pink_rhodey",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795784183070,
+      "tag": "0002_curious_iron_patriot",
+      "breakpoints": true
     }
   ]
 }

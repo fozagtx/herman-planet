@@ -9,7 +9,7 @@ export function Dock() {
       items={[
         { label: "Listen", href: "/t/she-get" },
         { label: "Music", href: "#music" },
-        { label: "Follow", href: "#follow" },
+        { label: "The Pack", href: "/pack" },
       ]}
       moreLabel="More"
       columns={[

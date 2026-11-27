@@ -6,6 +6,8 @@ import { Intro } from "@/components/landing/intro";
 import { LatestRelease } from "@/components/landing/latest-release";
 import { Lines } from "@/components/landing/lines";
 import { MoodDial } from "@/components/landing/mood-dial";
+import { PackTeaser } from "@/components/landing/pack-teaser";
+import { getPackName } from "@/lib/pack";
 import { Music } from "@/components/landing/music";
 import { Video } from "@/components/landing/video";
 import { Follow } from "@/components/follow";
@@ -47,6 +49,9 @@ export default function Home() {
       <Since />
       <Video />
       <Suspense fallback={null}>
+        <PackData />
+      </Suspense>
+      <Suspense fallback={null}>
         <FollowData />
       </Suspense>
       <Closing />
@@ -64,6 +69,10 @@ export default function Home() {
       <Dock />
     </main>
   );
+}
+
+async function PackData() {
+  return <PackTeaser name={await getPackName()} />;
 }
 
 async function FollowData() {
