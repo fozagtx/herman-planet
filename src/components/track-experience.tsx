@@ -158,7 +158,7 @@ function TrackView({ track, notes, startAt, player: p }: Props & { player: Playe
               <button onClick={begin} disabled={p.status !== "ready"}
                 className="press inline-flex min-h-12 items-center gap-2.5 rounded-full bg-ink px-6 text-[15px] font-medium text-surface hover:bg-ink/85 disabled:opacity-50">
                 <Play className="h-4 w-4 fill-current" />
-                {p.status === "loading" ? "Loading player" : p.status === "error" ? "Player unavailable" : `Play from ${fmt(entry)}`}
+                {p.status === "loading" ? "Loading player" : p.status === "error" ? "Player unavailable" : entry > 0 ? `Play from ${fmt(entry)}` : "Play"}
               </button>
             ) : (
               <button onClick={p.toggle} aria-label={p.playing ? "Pause" : "Play"}
@@ -170,6 +170,9 @@ function TrackView({ track, notes, startAt, player: p }: Props & { player: Playe
           </div>
 
           {p.embed && <div className="mt-5">{p.embed}</div>}
+          {track.previewOnly && (
+            <p className="mt-3 text-xs text-muted-foreground">Plays Apple&apos;s official 30 second preview. Full song on Spotify or Apple Music below.</p>
+          )}
           {p.status === "error" ? (
             <p className="mt-2 text-xs text-alert">The Spotify player didn&apos;t load. Use the Spotify button below to listen.</p>
           ) : (
@@ -188,85 +191,101 @@ function TrackView({ track, notes, startAt, player: p }: Props & { player: Playe
 
         {/* Right: inside the song */}
         <main className="min-w-0">
-          <section>
-            <div className="flex flex-col gap-1 md:flex-row md:items-end md:justify-between md:gap-4">
-              <h2 className="text-[24px] font-semibold tracking-tight md:text-[28px]">Inside the song</h2>
-              <label className="flex min-h-11 items-center gap-2 text-[13px] text-muted-foreground">
-                <input type="checkbox" checked={autoNotes} onChange={(e) => setAutoNotes(e.target.checked)} className="h-4 w-4 accent-[#1d1730]" />
-                Open moments as it plays
-              </label>
-            </div>
-
-            {/* Timeline */}
-            <div className="relative mt-3 md:mt-6 md:pt-7">
-              <div className="relative h-11">
-                {notes.map((n) => (
-                  <button key={n.id} onClick={() => jump(n)} aria-label={`Jump to ${fmt(n.t)}: ${n.title}`}
-                    className="group absolute bottom-0 flex h-11 w-11 -translate-x-1/2 items-end justify-center pb-1" style={{ left: pct(n.t) }}>
-                    <span className={`block rounded-full ring-2 ring-paper transition-[width,height] duration-150 ${active?.id === n.id ? "h-4 w-4" : "h-3 w-3 group-hover:h-4 group-hover:w-4"}`}
-                      style={{ background: KIND[n.kind].color }} />
-                  </button>
-                ))}
+          {track.story && (
+            <Reveal className="mb-10 md:mb-14">
+              <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">The story</p>
+              <p className="mt-3 font-[family-name:var(--font-serif)] text-[clamp(26px,3vw,36px)] leading-[1.15]">{track.story.text}</p>
+              <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-muted-foreground">
+                {track.story.madeBy && <span>{track.story.madeBy}</span>}
+                {track.story.source && (
+                  <a href={track.story.source.url} target="_blank" rel="noopener noreferrer" className="font-medium underline-offset-4 hover:text-ink hover:underline">
+                    Read more on {track.story.source.name} ↗
+                  </a>
+                )}
               </div>
-              <div role="slider" aria-label="Seek" aria-valuemin={0} aria-valuemax={Math.round(p.duration)} aria-valuenow={Math.round(p.time)}
-                aria-valuetext={`${fmt(p.time)} of ${fmt(p.duration)}`} tabIndex={0}
-                className="-my-3 cursor-pointer py-3"
-                onKeyDown={(e) => {
-                  if (e.key === "ArrowRight") { setStarted(true); p.seek(Math.min(p.duration, p.time + 5)); }
-                  if (e.key === "ArrowLeft") { setStarted(true); p.seek(Math.max(0, p.time - 5)); }
-                }}
-                onClick={(e) => {
-                  const r = e.currentTarget.getBoundingClientRect();
-                  setStarted(true);
-                  p.seek(((e.clientX - r.left) / r.width) * p.duration);
-                }}>
-                <div className="relative h-1.5 rounded-full bg-sunk">
-                  <div className="absolute inset-y-0 left-0 rounded-full bg-ink transition-[width] duration-150" style={{ width: pct(p.time) }} />
+            </Reveal>
+          )}
+          {notes.length > 0 && (
+          <section>
+              <div className="flex flex-col gap-1 md:flex-row md:items-end md:justify-between md:gap-4">
+                <h2 className="text-[24px] font-semibold tracking-tight md:text-[28px]">Inside the song</h2>
+                <label className="flex min-h-11 items-center gap-2 text-[13px] text-muted-foreground">
+                  <input type="checkbox" checked={autoNotes} onChange={(e) => setAutoNotes(e.target.checked)} className="h-4 w-4 accent-[#1d1730]" />
+                  Open moments as it plays
+                </label>
+              </div>
+  
+              {/* Timeline */}
+              <div className="relative mt-3 md:mt-6 md:pt-7">
+                <div className="relative h-11">
+                  {notes.map((n) => (
+                    <button key={n.id} onClick={() => jump(n)} aria-label={`Jump to ${fmt(n.t)}: ${n.title}`}
+                      className="group absolute bottom-0 flex h-11 w-11 -translate-x-1/2 items-end justify-center pb-1" style={{ left: pct(n.t) }}>
+                      <span className={`block rounded-full ring-2 ring-paper transition-[width,height] duration-150 ${active?.id === n.id ? "h-4 w-4" : "h-3 w-3 group-hover:h-4 group-hover:w-4"}`}
+                        style={{ background: KIND[n.kind].color }} />
+                    </button>
+                  ))}
+                </div>
+                <div role="slider" aria-label="Seek" aria-valuemin={0} aria-valuemax={Math.round(p.duration)} aria-valuenow={Math.round(p.time)}
+                  aria-valuetext={`${fmt(p.time)} of ${fmt(p.duration)}`} tabIndex={0}
+                  className="-my-3 cursor-pointer py-3"
+                  onKeyDown={(e) => {
+                    if (e.key === "ArrowRight") { setStarted(true); p.seek(Math.min(p.duration, p.time + 5)); }
+                    if (e.key === "ArrowLeft") { setStarted(true); p.seek(Math.max(0, p.time - 5)); }
+                  }}
+                  onClick={(e) => {
+                    const r = e.currentTarget.getBoundingClientRect();
+                    setStarted(true);
+                    p.seek(((e.clientX - r.left) / r.width) * p.duration);
+                  }}>
+                  <div className="relative h-1.5 rounded-full bg-sunk">
+                    <div className="absolute inset-y-0 left-0 rounded-full bg-ink transition-[width] duration-150" style={{ width: pct(p.time) }} />
+                  </div>
+                </div>
+                <div className="num mt-2 flex justify-between text-xs text-muted-foreground">
+                  <span>{fmt(p.time)}</span>
+                  <span>{fmt(p.duration)}</span>
                 </div>
               </div>
-              <div className="num mt-2 flex justify-between text-xs text-muted-foreground">
-                <span>{fmt(p.time)}</span>
-                <span>{fmt(p.duration)}</span>
-              </div>
-            </div>
-
-            {/* Moments */}
-            <Reveal delay={0.05}>
-            <ol className="mt-6 space-y-2">
-              {notes.map((n) => {
-                const open = active?.id === n.id;
-                const soloOn = !!p.solo && p.solo.join() === (n.layers ?? []).join();
-                return (
-                  <li key={n.id} className={`rounded-[15px] border transition-colors ${open ? "surface" : "border-transparent hover:bg-surface/60"}`}>
-                    <button onClick={() => jump(n)} className="flex min-h-14 w-full items-center gap-4 px-4 text-left">
-                      <span className="num w-11 text-sm text-muted-foreground">{fmt(n.t)}</span>
-                      <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: KIND[n.kind].color }} />
-                      <span className="flex-1 text-[16px] font-medium">{n.title}</span>
-                      <span className="text-xs text-muted-foreground">{KIND[n.kind].label}</span>
-                    </button>
-                    {open && (
-                      <div className="px-4 pb-4 animate-in fade-in md:pl-[5.25rem]">
-                        <p className="max-w-prose text-[15px] leading-relaxed text-ink/80">{n.body}</p>
-                        {n.credits.length > 0 && <p className="mt-2 text-[13px] text-muted-foreground">{n.credits.join(" · ")}</p>}
-                        <div className="mt-4 flex flex-wrap items-center gap-2">
-                          {n.layers?.length && p.setSolo ? (
-                            <button onClick={() => p.setSolo!(soloOn ? null : n.layers!)}
-                              className={`inline-flex min-h-10 items-center gap-2 rounded-full px-4 text-sm font-medium ${soloOn ? "bg-ink text-surface" : "border border-line bg-surface"}`}>
-                              {soloOn ? <Volume2 className="h-4 w-4" /> : <Headphones className="h-4 w-4" />}
-                              {soloOn ? "Back to full mix" : "Hear this layer alone"}
-                            </button>
-                          ) : null}
-                          <ShareSheet url={`${base}/t/${track.slug}/m/${n.t}`} title={`Share ${track.title} at ${fmt(n.t)}`} theme="light" variant="compact" />
-                          <Provenance note={n} />
+  
+              {/* Moments */}
+              <Reveal delay={0.05}>
+              <ol className="mt-6 space-y-2">
+                {notes.map((n) => {
+                  const open = active?.id === n.id;
+                  const soloOn = !!p.solo && p.solo.join() === (n.layers ?? []).join();
+                  return (
+                    <li key={n.id} className={`rounded-[15px] border transition-colors ${open ? "surface" : "border-transparent hover:bg-surface/60"}`}>
+                      <button onClick={() => jump(n)} className="flex min-h-14 w-full items-center gap-4 px-4 text-left">
+                        <span className="num w-11 text-sm text-muted-foreground">{fmt(n.t)}</span>
+                        <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: KIND[n.kind].color }} />
+                        <span className="flex-1 text-[16px] font-medium">{n.title}</span>
+                        <span className="text-xs text-muted-foreground">{KIND[n.kind].label}</span>
+                      </button>
+                      {open && (
+                        <div className="px-4 pb-4 animate-in fade-in md:pl-[5.25rem]">
+                          <p className="max-w-prose text-[15px] leading-relaxed text-ink/80">{n.body}</p>
+                          {n.credits.length > 0 && <p className="mt-2 text-[13px] text-muted-foreground">{n.credits.join(" · ")}</p>}
+                          <div className="mt-4 flex flex-wrap items-center gap-2">
+                            {n.layers?.length && p.setSolo ? (
+                              <button onClick={() => p.setSolo!(soloOn ? null : n.layers!)}
+                                className={`inline-flex min-h-10 items-center gap-2 rounded-full px-4 text-sm font-medium ${soloOn ? "bg-ink text-surface" : "border border-line bg-surface"}`}>
+                                {soloOn ? <Volume2 className="h-4 w-4" /> : <Headphones className="h-4 w-4" />}
+                                {soloOn ? "Back to full mix" : "Hear this layer alone"}
+                              </button>
+                            ) : null}
+                            <ShareSheet url={`${base}/t/${track.slug}/m/${n.t}`} title={`Share ${track.title} at ${fmt(n.t)}`} theme="light" variant="compact" />
+                            <Provenance note={n} />
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </li>
-                );
-              })}
-            </ol>
-            </Reveal>
-          </section>
+                      )}
+                    </li>
+                  );
+                })}
+              </ol>
+              </Reveal>
+            </section>
+          )}
 
           <Reveal className="mt-10 border-t border-line pt-6 md:mt-14 md:pt-8">
             <h3 className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Credits</h3>

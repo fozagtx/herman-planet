@@ -40,6 +40,10 @@ export type Track = {
   /** Official 30s preview (Apple). */
   previewUrl?: string | null;
   artworkUrl?: string | null;
+  /** What inspired it (published source), shown when the team hasn't written timed notes. */
+  story?: { text: string; madeBy?: string; source?: { name: string; url: string } } | null;
+  /** True when only Apple's 30 second preview plays here. */
+  previewOnly?: boolean;
 };
 
 export type Follow = {

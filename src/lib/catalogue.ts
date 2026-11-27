@@ -1,3 +1,5 @@
+import type { Track } from "./types";
+
 // Herman Suede releases. Artwork and 30s previews are Apple's official assets
 // (iTunes Lookup API, fetched 27 Nov 2026). Spotify IDs checked to return 200.
 export type Release = {
@@ -13,6 +15,8 @@ export type Release = {
   story?: string;
   /** Who made it, as published. */
   madeBy?: string;
+  /** Full length in seconds, when the full song plays via Spotify. */
+  seconds?: number;
   /** Where the story comes from (read more). */
   source?: { name: string; url: string };
 };
@@ -24,9 +28,10 @@ export const CATALOGUE: Release[] = [
     preview: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/86/7d/e7/867de7bf-28dd-5ed9-5497-8634939e1e33/mzaf_16667730978564218141.plus.aac.p.m4a",
     apple: "https://music.apple.com/us/album/she-get/6833466578?i=6833466583",
     spotify: "https://open.spotify.com/track/0KvgjL7EWkXNgVMkbI1nHx",
-    story: "Dating across Accra: the long trek to see someone who lives all the way in Dansoman. It opens with Herman singing in Ga over traditional percussion.",
+    seconds: 206,
+    story: `For eight years Herman balanced school and music. In May 2026 he graduated from Liberty University in Virginia and wrote, “SUEDE IS BACK IN OFFICE.” She Get is the comeback: dating across Accra, the long trek to see someone all the way in Dansoman, opening in Ga over traditional percussion.`,
     madeBy: "Produced by MILN and BNYX",
-    source: { name: "DCLeakers", url: "https://dcleakers.net/herman-suede-returns-to-active-music-with-new-single-she-get/" },
+    source: { name: "The Vaultz", url: "https://thevaultznews.com/2026/11/25/herman-suede-drops-new-single-she-get/" },
   },
   {
     title: "ONE BY ONE II", artist: "Herman Suede & The Therapist", year: "2025", from: "Single",
@@ -34,6 +39,7 @@ export const CATALOGUE: Release[] = [
     preview: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/38/4d/a3/384da3bf-a78c-2f82-808f-85653870f964/mzaf_12915699795237464458.plus.aac.p.m4a",
     apple: "https://music.apple.com/us/album/one-by-one-ii/1814555768?i=1814555769",
     spotify: "https://open.spotify.com/track/3MHTjBkjMmDu1fYjNDAy7F",
+    seconds: 159,
     story: "“One by One is a song I feel never reached its full potential.” Five years on, The Therapist heard it, fell for it and insisted on a verse. A song about patience and pursuit in love, with a Ga bridge.",
     madeBy: "With The Therapist",
     source: { name: "Ghana Music", url: "https://ghanamusic.com/interviews/2025/06/24/herman-suede-talks-growth-sound-and-one-by-one-ii/" },
@@ -62,6 +68,7 @@ export const CATALOGUE: Release[] = [
     preview: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ee/a7/39/eea739d5-541e-96a8-7b86-d1e979cc14e6/mzaf_12956757920937556980.plus.aac.p.m4a",
     apple: "https://music.apple.com/us/album/one-by-one/1526996073?i=1526996074",
     spotify: "https://open.spotify.com/track/0mfwWliY4X4TlfOHGJ3gru",
+    seconds: 150,
     story: "He sees a girl across a party and decides to win her over one step at a time. His most played song.",
     madeBy: "Produced by S.Kool Beatz",
     source: { name: "Beatz Nation", url: "https://beatznation.com/albums/herman-suede-one-by-one/" },
@@ -90,3 +97,38 @@ export const CATALOGUE: Release[] = [
     source: { name: "Citi Newsroom", url: "https://www.citinewsroom.com/2018/05/herman-suede-15-year-old-ghanaian-musician-warms-up-for-bigger-surprises/" },
   },
 ];
+
+export const slugOf = (title: string) =>
+  title.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+export const releaseBySlug = (slug: string) => CATALOGUE.find((r) => slugOf(r.title) === slug);
+
+/**
+ * A song page for any release, so listeners stay on the site. The full song plays via Spotify
+ * where we have its id; otherwise Apple's official 30 second preview plays in the page.
+ */
+export function trackFromRelease(r: Release): Track {
+  const spotifyId = r.spotify?.match(/track\/([A-Za-z0-9]{22})/)?.[1] ?? null;
+  return {
+    slug: slugOf(r.title),
+    title: r.title,
+    artist: r.artist,
+    year: r.year,
+    duration: spotifyId && r.seconds ? r.seconds : 30,
+    hookAt: 0,
+    stems: spotifyId ? [] : [{ id: "preview", label: "Preview", src: r.preview }],
+    credits: [{ role: "Artist", name: r.artist }, ...(r.madeBy ? [{ role: "Made by", name: r.madeBy.replace(/^Produced by /, "") }] : []), { role: "From", name: `${r.from}, ${r.year}` }],
+    releases: [
+      ...(r.spotify ? [{ platform: "Spotify", href: r.spotify }] : []),
+      { platform: "Apple Music", href: r.apple },
+    ],
+    related: [],
+    liveUpdate: null,
+    placeholderMedia: false,
+    spotifyTrackId: spotifyId,
+    previewUrl: r.preview,
+    artworkUrl: r.art,
+    story: r.story ? { text: r.story, madeBy: r.madeBy, source: r.source } : null,
+    previewOnly: !spotifyId,
+  };
+}

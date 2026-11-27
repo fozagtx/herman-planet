@@ -4,7 +4,8 @@ import { useState } from "react";
 import { Reveal } from "@/components/reveal";
 import { DiagonalCarousel } from "@/components/ui/diagonal-carousel";
 import { MusicPlayer } from "@/components/ui/music-player";
-import { CATALOGUE } from "@/lib/catalogue";
+import Link from "next/link";
+import { CATALOGUE, slugOf } from "@/lib/catalogue";
 import { PlayingIsland } from "@/components/islands";
 
 type Props = {
@@ -77,6 +78,9 @@ export function Music({ tone = "ink", kicker = "Music", heading = "Every release
             <p className={`mt-2 text-[16px] leading-relaxed ${ink ? "text-surface/70" : "text-muted-foreground"}`}>From {r.from}, {r.year}.</p>
           )}
           <div className={`mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] ${ink ? "text-surface/60" : "text-muted-foreground"}`}>
+            <Link href={`/t/${slugOf(r.title)}`} className={`font-medium underline-offset-4 hover:underline ${ink ? "text-surface" : "text-ink"}`}>
+              Open the song →
+            </Link>
             {r.madeBy && <span>{r.madeBy}</span>}
             {r.source && (
               <a href={r.source.url} target="_blank" rel="noopener noreferrer" className="font-medium underline-offset-4 hover:underline">

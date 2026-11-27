@@ -5,6 +5,7 @@ import { Hero } from "@/components/landing/hero";
 import { Intro } from "@/components/landing/intro";
 import { LatestRelease } from "@/components/landing/latest-release";
 import { Lines } from "@/components/landing/lines";
+import { MoodDial } from "@/components/landing/mood-dial";
 import { Music } from "@/components/landing/music";
 import { Video } from "@/components/landing/video";
 import { Follow } from "@/components/follow";
@@ -12,7 +13,7 @@ import { Bio } from "@/components/landing/bio";
 import { Since } from "@/components/landing/since";
 import { Ticker } from "@/components/landing/ticker";
 import { Stats } from "@/components/landing/stats";
-import { CATALOGUE } from "@/lib/catalogue";
+import { CATALOGUE, slugOf } from "@/lib/catalogue";
 import { PLATFORMS } from "@/lib/platforms";
 import { getApprovedNotes, getTrack } from "@/lib/store";
 
@@ -20,11 +21,11 @@ const SLUG = "she-get";
 
 const SHE_GET = CATALOGUE[0];
 const HERO_ITEMS = [
-  { src: "/img/herman.jpg", title: "She Get", preview: SHE_GET.preview, href: SHE_GET.spotify ?? SHE_GET.apple },
+  { src: "/img/herman.jpg", title: "She Get", preview: SHE_GET.preview, href: "/t/she-get" },
   ...CATALOGUE.slice(0, 4),
-  { src: "/img/herman.jpg", title: "She Get", preview: SHE_GET.preview, href: SHE_GET.spotify ?? SHE_GET.apple },
+  { src: "/img/herman.jpg", title: "She Get", preview: SHE_GET.preview, href: "/t/she-get" },
   ...CATALOGUE.slice(4),
-].map((c) => ("art" in c ? { src: c.art, title: c.title, preview: c.preview, href: c.spotify ?? c.apple } : c));
+].map((c) => ("art" in c ? { src: c.art, title: c.title, preview: c.preview, href: `/t/${slugOf(c.title)}` } : c));
 
 
 export default function Home() {
@@ -38,6 +39,7 @@ export default function Home() {
         <Release />
       </Suspense>
       <Music tone="paper" />
+      <MoodDial />
       <div className="px-6 md:px-8">
         <Stats />
       </div>

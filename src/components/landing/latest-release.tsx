@@ -25,7 +25,7 @@ export function LatestRelease({ track, notes }: { track: Track; notes: Note[] })
         </p>
         <h2 className="mt-3 font-[family-name:var(--font-serif)] text-[clamp(56px,8vw,112px)] leading-[0.9] tracking-[-0.02em]">{track.title}</h2>
         <p className="mt-5 max-w-md text-[17px] leading-relaxed text-ink/75">
-          It opens with Herman singing in Ga over traditional percussion, then folds into synth drums and bass. Produced by MILN and BNYX.
+          Eight years of balancing school and music. A degree from Liberty University in May. Then this: his comeback, opening in Ga over traditional percussion before it folds into synth drums and bass. Produced by MILN and BNYX.
         </p>
         <div className="mt-7 flex flex-wrap items-center gap-2">
           <CandyLink href={`/t/${track.slug}`}>Listen</CandyLink>

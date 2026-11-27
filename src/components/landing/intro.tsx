@@ -5,6 +5,9 @@ import gsap from "gsap";
 
 const WORDS = ["Herman", "Planet"];
 
+// Set once the intro has played in this page load; navigating back home inside the site skips it.
+let playedThisLoad = false;
+
 /**
  * "Welcome to Herman Planet": a first-visit brand moment.
  * Herman's face pops up as a planet, the name rises around it, the planet
@@ -15,15 +18,17 @@ const WORDS = ["Herman", "Planet"];
 export function Intro() {
   const root = useRef<HTMLDivElement>(null);
   const tl = useRef<gsap.core.Timeline | null>(null);
-  const [gone, setGone] = useState(false);
+  const [gone, setGone] = useState(() => playedThisLoad);
 
   useEffect(() => {
     const html = document.documentElement;
+    if (playedThisLoad) return;
     // Skipped visits: CSS already hides the layer (display: none), nothing to run.
     if (html.classList.contains("intro-skip")) return;
     const el = root.current!;
     html.classList.add("intro-on");
     const finish = () => {
+      playedThisLoad = true;
       html.classList.remove("intro-on");
       setGone(true);
     };

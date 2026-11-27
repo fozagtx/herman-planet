@@ -2,6 +2,7 @@ import "server-only";
 import { and, asc, eq } from "drizzle-orm";
 import { connection } from "next/server";
 import { db, notes, tracks } from "@/db";
+import { releaseBySlug, trackFromRelease } from "./catalogue";
 import type { Note, Track } from "./types";
 
 type NoteRow = typeof notes.$inferSelect;
@@ -23,7 +24,13 @@ export async function getTracks(): Promise<Track[]> {
 export async function getTrack(slug: string): Promise<Track | undefined> {
   await connection();
   const [row] = await db.select().from(tracks).where(eq(tracks.slug, slug)).limit(1);
-  return row;
+  if (row) {
+    // Keep the published story alongside the team's own data.
+    const r = releaseBySlug(slug);
+    return r?.story ? { ...row, story: { text: r.story, madeBy: r.madeBy, source: r.source } } : row;
+  }
+  const r = releaseBySlug(slug);
+  return r ? trackFromRelease(r) : undefined;
 }
 
 /** Fan-facing: only approved notes ever leave this function. */

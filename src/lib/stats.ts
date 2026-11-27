@@ -11,3 +11,9 @@ export const TOP_PLAYS = [
   { title: "Naa Kwarley", plays: 127404, href: SPOTIFY_ARTIST },
 ];
 export const TOP_PLAYS_TOTAL = TOP_PLAYS.reduce((a, t) => a + t.plays, 0);
+
+// Audiomack account total, from audiomack.com/hermansuede (27 Nov 2026): "2.48M Total Account Plays".
+export const AUDIOMACK_PLAYS = 2_480_000;
+export const AUDIOMACK_ARTIST = "https://audiomack.com/hermansuede";
+/** A floor, not a total: Spotify's top four songs plus his Audiomack account. Other songs and platforms add more. */
+export const PLAYS_AND_COUNTING = TOP_PLAYS_TOTAL + AUDIOMACK_PLAYS;

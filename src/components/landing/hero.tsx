@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Pause, Play, X } from "lucide-react";
-import { SiSpotify } from "react-icons/si";
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 import { MagneticSpotlightMarquee } from "@/components/ui/magnetic-spotlight-marquee";
 import { PlayingIsland } from "@/components/islands";
 
@@ -66,10 +67,10 @@ export function Hero({ items }: { items: HeroItem[] }) {
             <p className="truncate text-sm font-medium">{now.title}</p>
             <p className="num text-xs text-muted-foreground">{playing ? "Preview" : "Paused"} · {fmt(pos.t)} / {fmt(pos.d)}</p>
           </div>
-          <a href={now.href} target="_blank" rel="noopener noreferrer" aria-label={`${now.title} on Spotify or Apple Music`}
+          <Link href={now.href} aria-label={`Open ${now.title}`}
             className="flex h-10 w-10 items-center justify-center rounded-full text-ink/70 hover:bg-sunk hover:text-ink">
-            <SiSpotify className="h-4 w-4" />
-          </a>
+            <ArrowUpRight className="h-4 w-4" />
+          </Link>
           <button onClick={() => onItem(active!)} aria-label={playing ? "Pause" : "Play"}
             className="flex h-10 w-10 items-center justify-center rounded-full bg-ink text-surface hover:bg-ink/85">
             {playing ? <Pause className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current" />}
