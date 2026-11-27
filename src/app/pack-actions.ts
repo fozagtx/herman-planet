@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireTeam } from "@/lib/auth";
 import { bachs } from "@/lib/bachs";
 import {
-  addEntry, addOrder, addPost, getItem, removeSamples, setOrderCheckout, setOrderStatus, type PackOrder, drawWinner, saveGiveaway, saveItem, setGiveawayStatus, setItemStatus, setPackName, setPostStatus,
+  addEntry, addOrder, addPost, deleteItem, getItem, removeSamples, saveImage, setOrderCheckout, setOrderStatus, type PackOrder, drawWinner, saveGiveaway, saveItem, setGiveawayStatus, setItemStatus, setPackName, setPostStatus,
   type PackItem, type PackPost, type Giveaway,
 } from "@/lib/pack";
 
@@ -64,7 +64,8 @@ export async function placeOrder(_p: PackState, f: FormData): Promise<PackState>
 
   // Pay online with Bachs when it's set up and the item has an amount. Samples never charge.
   const client = bachs();
-  if (client && item.amount && !item.sample) {
+  const wantsBachs = f.get("pay") !== "contact";
+  if (client && item.amount && !item.sample && wantsBachs) {
     const site = process.env.NEXT_PUBLIC_SITE_URL ?? "";
     const isEmail = contact.includes("@");
     try {
@@ -137,6 +138,16 @@ export async function saveShopItem(_p: PackState, f: FormData): Promise<PackStat
   };
   try {
     if (!["merch", "unreleased"].includes(kind)) throw new Error("Pick merch or unreleased music.");
+    // A new photo upload wins over a pasted link; with neither, an edit keeps its current photo.
+    let imageUrl: string | null = str(f.get("currentImage"), 500) || null;
+    const photo = f.get("photo");
+    if (photo instanceof File && photo.size > 0) {
+      if (!["image/jpeg", "image/png", "image/webp"].includes(photo.type)) throw new Error("Upload a JPG, PNG or WebP photo.");
+      if (photo.size > 2_500_000) throw new Error("That photo is too large. Try one under 2.5 MB.");
+      imageUrl = `/api/pack-image/${await saveImage(photo.type, Buffer.from(await photo.arrayBuffer()))}`;
+    } else if (str(f.get("image"), 500)) {
+      imageUrl = url(str(f.get("image"), 500), "Image link");
+    }
     const title = str(f.get("title"), 80);
     const price = str(f.get("price"), 30);
     if (!title) throw new Error("Add a title.");
@@ -146,7 +157,7 @@ export async function saveShopItem(_p: PackState, f: FormData): Promise<PackStat
       amount: (() => { const a = str(f.get("amount"), 12); if (!a) return null; if (!/^\d+(\.\d{1,2})?$/.test(a)) throw new Error("Amount needs to be a number like 250 or 250.00."); return Number(a).toFixed(2); })(),
       currency: (str(f.get("currency"), 3).toUpperCase() || "GHS"),
       description: str(f.get("description"), 280) || null,
-      imageUrl: url(str(f.get("image"), 500), "Image link"),
+      imageUrl,
       previewUrl: url(str(f.get("preview"), 500), "Snippet link"),
       buyUrl: url(str(f.get("buy"), 500), "Checkout link"),
       sizes: str(f.get("sizes"), 80) || null,
@@ -157,6 +168,12 @@ export async function saveShopItem(_p: PackState, f: FormData): Promise<PackStat
   }
   refresh();
   return { ok: true, message: f.get("live") === "on" ? "Saved and live in the Pack shop." : "Saved as a draft." };
+}
+
+export async function removeItem(f: FormData) {
+  await requireTeam();
+  await deleteItem(String(f.get("id")));
+  refresh();
 }
 
 export async function toggleItem(f: FormData) {

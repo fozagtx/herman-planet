@@ -1,7 +1,7 @@
 import { Suspense, type ReactNode } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
-import { clearSamples, giveawayStatus, moderatePost, orderStatus, toggleItem } from "@/app/pack-actions";
+import { clearSamples, giveawayStatus, moderatePost, orderStatus, removeItem, toggleItem } from "@/app/pack-actions";
 import { isTeam } from "@/lib/auth";
 import { paymentsOn } from "@/lib/bachs";
 import { countSamples, getAllGiveaways, getAllItems, getAllPosts, getOrders, getPackName } from "@/lib/pack";
@@ -163,9 +163,18 @@ async function Body() {
           <ul className="mb-5 space-y-3">
             {items.map((i) => (
               <li key={i.id} className="flex flex-wrap items-center gap-3 rounded-[13px] border border-line bg-paper/60 p-4">
+                {i.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={i.imageUrl} alt="" className="h-14 w-14 shrink-0 rounded-[11px] object-cover" />
+                ) : (
+                  <div className="h-14 w-14 shrink-0 rounded-[11px] bg-sunk" />
+                )}
                 <div className="min-w-0 flex-1">
                   <p className="font-medium">{i.title} <span className="num text-muted-foreground">· {i.price}</span></p>
-                  <p className="text-xs text-muted-foreground">{i.kind === "merch" ? "Merch" : "Unreleased music"} · <b>{i.status}</b></p>
+                  <p className="text-xs text-muted-foreground">
+                    {i.kind === "merch" ? "Merch" : "Unreleased music"} · <b>{i.status}</b>
+                    {i.amount ? ` · Bachs ${i.amount} ${i.currency}` : " · no online amount"}{i.sample ? " · sample" : ""}
+                  </p>
                 </div>
                 <form action={toggleItem}>
                   <input type="hidden" name="id" value={i.id} />
@@ -175,6 +184,14 @@ async function Body() {
                     {i.status === "live" ? "Take out of shop" : "Put in shop"}
                   </IslandSubmit>
                 </form>
+                <details className="w-full">
+                  <summary className="inline-flex min-h-11 cursor-pointer items-center text-sm font-medium text-muted-foreground hover:text-ink">Edit photo, price and details</summary>
+                  <div className="mt-3"><ItemEditor item={i} /></div>
+                  <form action={removeItem} className="mt-4 border-t border-line pt-4">
+                    <input type="hidden" name="id" value={i.id} />
+                    <IslandSubmit what={i.title} done="Deleted" className={`${pill} border border-alert/40 bg-surface text-alert hover:border-alert`}>Delete this item</IslandSubmit>
+                  </form>
+                </details>
               </li>
             ))}
           </ul>

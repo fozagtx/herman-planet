@@ -1,7 +1,7 @@
 import "server-only";
 import { and, asc, count, desc, eq, gt, inArray } from "drizzle-orm";
 import { connection } from "next/server";
-import { db, giveawayEntries, giveaways, packItems, packOrders, packPosts, siteSettings } from "@/db";
+import { db, giveawayEntries, giveaways, packImages, packItems, packOrders, packPosts, siteSettings } from "@/db";
 
 export type PackPost = typeof packPosts.$inferSelect;
 export type PackItem = typeof packItems.$inferSelect;
@@ -144,4 +144,20 @@ export async function countSamples(): Promise<number> {
   const [b] = await db.select({ n: count() }).from(packItems).where(eq(packItems.sample, true));
   const [c] = await db.select({ n: count() }).from(giveaways).where(eq(giveaways.sample, true));
   return a.n + b.n + c.n;
+}
+
+// Uploaded photos
+export async function saveImage(mime: string, data: Buffer): Promise<string> {
+  const [row] = await db.insert(packImages).values({ mime, data }).returning({ id: packImages.id });
+  return row.id;
+}
+export async function getImage(id: string) {
+  await connection();
+  const [row] = await db.select().from(packImages).where(eq(packImages.id, id)).limit(1);
+  return row;
+}
+
+export async function deleteItem(id: string) {
+  // Orders for this item are removed with it (cascade); its photo stays unreferenced.
+  await db.delete(packItems).where(eq(packItems.id, id));
 }

@@ -1,5 +1,6 @@
 import {
   boolean,
+  customType,
   index,
   integer,
   jsonb,
@@ -178,3 +179,13 @@ export const giveawayEntries = pgTable(
   },
   (t) => [uniqueIndex("giveaway_entries_once_idx").on(t.giveawayId, t.contact)],
 );
+
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({ dataType: () => "bytea" });
+
+/** Photos the team uploads in Studio (merch, unreleased covers). Served from /api/pack-image/<id>. */
+export const packImages = pgTable("pack_images", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  mime: text("mime").notNull(),
+  data: bytea("data").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});

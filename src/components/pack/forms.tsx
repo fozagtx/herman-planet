@@ -95,6 +95,7 @@ export function BuyButton({ item }: { item: BuyItem }) {
   const ref = useRef<HTMLDialogElement>(null);
   const [state, action, pending] = useActionState<PackState, FormData>(placeOrder, null);
   const sizes = (item.sizes ?? "").split(",").map((x) => x.trim()).filter(Boolean);
+  const [pay, setPay] = useState<"bachs" | "contact">("bachs");
   useEffect(() => {
     if (state?.redirect) window.location.assign(state.redirect);
   }, [state]);
@@ -152,11 +153,23 @@ export function BuyButton({ item }: { item: BuyItem }) {
                 <input type="checkbox" name="consent" required className="mt-0.5 h-4 w-4 accent-[#1d1730]" />
                 Herman&apos;s team can contact me about payment and delivery.
               </label>
-              <p className="text-xs text-muted-foreground">
-                {item.online && !item.sample ? "You'll pay on secure Bachs checkout: card or mobile money." : "No payment here. The team confirms your order and sends payment details."}
-              </p>
+              {item.online && !item.sample ? (
+                <fieldset className="grid gap-2">
+                  <legend className="mb-1 text-[13px] font-medium text-muted-foreground">How do you want to pay?</legend>
+                  <label className="flex cursor-pointer items-start gap-3 rounded-[13px] border border-line p-3 has-[:checked]:border-ink">
+                    <input type="radio" name="pay" value="bachs" defaultChecked className="mt-1 h-4 w-4 accent-[#1d1730]" onChange={() => setPay("bachs")} />
+                    <span><span className="block text-sm font-medium">Pay now with Bachs</span><span className="text-[13px] text-muted-foreground">Card or mobile money, on secure checkout.</span></span>
+                  </label>
+                  <label className="flex cursor-pointer items-start gap-3 rounded-[13px] border border-line p-3 has-[:checked]:border-ink">
+                    <input type="radio" name="pay" value="contact" className="mt-1 h-4 w-4 accent-[#1d1730]" onChange={() => setPay("contact")} />
+                    <span><span className="block text-sm font-medium">Have Herman&apos;s team contact me</span><span className="text-[13px] text-muted-foreground">They confirm your order and send payment details.</span></span>
+                  </label>
+                </fieldset>
+              ) : (
+                <p className="text-xs text-muted-foreground">No payment here. Herman&apos;s team confirms your order and sends payment details.</p>
+              )}
               <Done state={state} />
-              <button disabled={pending} className={btn}>{pending ? "Placing order" : item.online && !item.sample ? "Continue to payment" : "Place order"}</button>
+              <button disabled={pending} className={btn}>{pending ? "Placing order" : item.online && !item.sample && pay === "bachs" ? "Continue to payment" : "Place order"}</button>
             </form>
           )}
         </div>

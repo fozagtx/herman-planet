@@ -56,6 +56,12 @@ Herman asked for "a section dedicated to my fans and that sense of community", w
 2. In the Bachs dashboard, point a webhook at `https://herman-planet.vercel.app/api/webhooks/bachs`.
 3. In Studio → The Pack, give each item an amount and currency (e.g. 250.00 GHS).
 
+Two ways to pay, the fan picks: **Pay now with Bachs** (card or mobile money) or **Have Herman's team contact me** (the team confirms and sends payment details).
+
+### Listing merch from Studio
+
+Studio → The Pack → Shop → **New item**: upload a photo (resized in the browser, stored in Neon, served from `/api/pack-image/<id>`), set the title, the price shown, the amount Bachs charges and sizes, tick "In the shop", save. Every item can be edited (replace photo, change price) or deleted later.
+
 Buy then creates the order, opens a Bachs checkout (`reference` = order id) and sends the fan there. The order turns **Paid** when the signed webhook arrives, or when the fan returns and the site checks the checkout's status with Bachs. Without a key, the shop falls back to "place an order, the team sends payment details".
 
 ## What is real and what is not
