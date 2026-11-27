@@ -10,6 +10,7 @@ import { Video } from "@/components/landing/video";
 import { Follow } from "@/components/follow";
 import { Bio } from "@/components/landing/bio";
 import { Since } from "@/components/landing/since";
+import { Ticker } from "@/components/landing/ticker";
 import { Stats } from "@/components/landing/stats";
 import { CATALOGUE } from "@/lib/catalogue";
 import { PLATFORMS } from "@/lib/platforms";
@@ -31,11 +32,12 @@ export default function Home() {
     <main className="flex w-full flex-1 flex-col">
       <Intro />
       <Hero items={HERO_ITEMS} />
+      <Ticker />
       <Bio />
       <Suspense fallback={<div className="mx-auto my-24 h-[520px] w-full max-w-6xl animate-pulse rounded-[15px] bg-sunk" />}>
         <Release />
       </Suspense>
-      <Music />
+      <Music tone="paper" />
       <div className="px-6 md:px-8">
         <Stats />
       </div>

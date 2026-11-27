@@ -3,14 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 
-const KEY = "hp-intro-seen";
 const WORDS = ["Herman", "Planet"];
 
 /**
  * "Welcome to Herman Planet": a first-visit brand moment.
  * Herman's face pops up as a planet, the name rises around it, the planet
  * grows to fill the screen and the whole layer wipes up into the live page.
- * Rules: homepage only, once per session, about 2s, tap or Enter skips,
+ * Rules: homepage only, plays on every load, about 2s, tap or Enter skips,
  * no motion for reduced-motion visitors (the inline script hides it before paint).
  */
 export function Intro() {
@@ -25,7 +24,6 @@ export function Intro() {
     const el = root.current!;
     html.classList.add("intro-on");
     const finish = () => {
-      try { sessionStorage.setItem(KEY, "1"); } catch {}
       html.classList.remove("intro-on");
       setGone(true);
     };
@@ -36,7 +34,8 @@ export function Intro() {
       .fromTo(q(".intro-char"), { yPercent: 110, y: 0 }, { yPercent: 0, y: 0, duration: 0.55, stagger: 0.03 }, 0.3)
       .to(q(".intro-planet"), { clipPath: "circle(80% at 50% 42%)", scale: 1, duration: 0.7, ease: "power2.inOut" }, 1.15)
       .to(q(".intro-copy"), { opacity: 0, y: -12, duration: 0.3, ease: "power2.in" }, 1.25)
-      .to(el, { clipPath: "inset(0% 0% 100% 0%)", duration: 0.7, ease: "power4.inOut" }, 1.6);
+      .to(el, { clipPath: "inset(0% 0% 100% 0%)", duration: 0.8, ease: "power4.inOut" }, 1.6)
+      .fromTo(".spotlight", { y: 90, scale: 0.96, opacity: 0.6 }, { y: 0, scale: 1, opacity: 1, duration: 1.1, ease: "power3.out", clearProps: "transform,opacity" }, 1.62);
     tl.current = t;
     const skip = (e: KeyboardEvent) => (e.key === "Enter" || e.key === "Escape") && t.progress(1);
     window.addEventListener("keydown", skip);
@@ -53,7 +52,7 @@ export function Intro() {
       {/* Runs before paint: repeat visits and reduced motion never see the intro. */}
       <script
         dangerouslySetInnerHTML={{
-          __html: `try{if(sessionStorage.getItem("${KEY}")||matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.classList.add("intro-skip")}catch(e){document.documentElement.classList.add("intro-skip")}`,
+          __html: `try{if(matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.classList.add("intro-skip")}catch(e){}`,
         }}
       />
       <div

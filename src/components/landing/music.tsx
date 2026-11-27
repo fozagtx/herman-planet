@@ -42,7 +42,7 @@ export function Music({ tone = "ink", kicker = "Music", heading = "Every release
           <p className={`text-[11px] font-medium uppercase tracking-wider ${ink ? "text-surface/55" : "text-muted-foreground"}`}>{kicker}</p>
           <h2 className="mt-3 font-[family-name:var(--font-serif)] text-[clamp(44px,6vw,80px)] leading-[0.95]">{heading}</h2>
         </div>
-        <p className={`max-w-xs text-[15px] ${ink ? "text-surface/60" : "text-muted-foreground"}`}>Swipe through the covers. The player follows.</p>
+        <p className={`max-w-xs text-[15px] ${ink ? "text-surface/60" : "text-muted-foreground"}`}>Swipe through the covers. The player follows, and you get the story behind each one.</p>
       </Reveal>
       <DiagonalCarousel
         className={`h-[420px] outline-none md:h-[520px] ${ink ? "-mt-6" : "-mt-10 md:-mt-20"}`}
@@ -65,6 +65,25 @@ export function Music({ tone = "ink", kicker = "Music", heading = "Every release
             onTrackChange={(_, n) => n !== i && setI(n)}
             onPlaybackChange={(st) => { setPb(st); if (st.playing) setStarted(true); }}
           />
+        </div>
+        {/* What inspired it: only where a published source says so. */}
+        <div key={r.title} className={`mt-2 w-full max-w-2xl rounded-[15px] border p-5 text-left animate-in fade-in ${ink ? "border-white/10 bg-white/5" : "surface"}`}>
+          <p className={`text-[11px] font-medium uppercase tracking-wider ${ink ? "text-surface/55" : "text-muted-foreground"}`}>
+            {r.title} · {r.year} · {r.from}
+          </p>
+          {r.story ? (
+            <p className={`mt-2 text-[16px] leading-relaxed ${ink ? "text-surface/85" : "text-ink/80"}`}>{r.story}</p>
+          ) : (
+            <p className={`mt-2 text-[16px] leading-relaxed ${ink ? "text-surface/70" : "text-muted-foreground"}`}>From {r.from}, {r.year}.</p>
+          )}
+          <div className={`mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] ${ink ? "text-surface/60" : "text-muted-foreground"}`}>
+            {r.madeBy && <span>{r.madeBy}</span>}
+            {r.source && (
+              <a href={r.source.url} target="_blank" rel="noopener noreferrer" className="font-medium underline-offset-4 hover:underline">
+                Read more on {r.source.name} ↗
+              </a>
+            )}
+          </div>
         </div>
         <div className={`flex gap-4 text-[13px] ${ink ? "text-surface/55" : "text-muted-foreground"}`}>
           {r.spotify && <a href={r.spotify} target="_blank" rel="noopener noreferrer" className="underline-offset-4 hover:underline">Spotify ↗</a>}

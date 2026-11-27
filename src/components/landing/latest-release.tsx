@@ -6,6 +6,7 @@ import type { Note, Track } from "@/lib/types";
 import { ShareSheet } from "@/components/ui/share-sheet";
 import { CandyLink } from "./candy-link";
 import { ReleaseCover } from "./release-cover";
+import { ReleasedAgo } from "./released-ago";
 
 const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 const DOT = { sound: "#ffcf8a", lyrics: "#f6a19a", production: "#c9b7f2" } as const;
@@ -15,7 +16,13 @@ export function LatestRelease({ track, notes }: { track: Track; notes: Note[] })
     <section id="listen" className="mx-auto grid w-full max-w-6xl items-center gap-8 px-6 py-14 md:grid-cols-2 md:gap-16 md:px-8 md:py-24">
       <Reveal><ReleaseCover src={track.artworkUrl ?? ""} alt={`${track.title} cover art`} /></Reveal>
       <Reveal delay={0.08}>
-        <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">New single · {track.year}</p>
+        <p className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-ok opacity-60 motion-safe:animate-ping" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-ok" />
+          </span>
+          Out now · New single · <ReleasedAgo iso="2026-11-25" />
+        </p>
         <h2 className="mt-3 font-[family-name:var(--font-serif)] text-[clamp(56px,8vw,112px)] leading-[0.9] tracking-[-0.02em]">{track.title}</h2>
         <p className="mt-5 max-w-md text-[17px] leading-relaxed text-ink/75">
           It opens with Herman singing in Ga over traditional percussion, then folds into synth drums and bass. Produced by MILN and BNYX.

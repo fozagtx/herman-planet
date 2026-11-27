@@ -250,3 +250,9 @@ button.surface:hover {
 /* Herman Planet intro: hidden before paint on repeat visits / reduced motion. */
 .intro-skip .intro { display: none; }
 html.intro-on, html.intro-on body { overflow: hidden; }
+
+/* Launch ticker */
+@keyframes ticker { to { transform: translateX(-50%); } }
+.ticker-track { animation: ticker 28s linear infinite; }
+a:hover > .ticker-track { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { .ticker-track { animation: none; } }

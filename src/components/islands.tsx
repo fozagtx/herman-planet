@@ -7,6 +7,7 @@ import { CheckGlyph, PauseGlyph, PlayGlyph, WarningGlyph } from "@/components/is
 import { IslandRoundButton } from "@/components/islandcn/island-button";
 import { BottomBar, ExpandedBottom, ExpandedSide, SensorRow } from "@/components/islandcn/island-layout";
 import { Caption, CompactText, ContextLabel, ExpandedTitle, MinimalPair, NumberText, TitleStack } from "@/components/islandcn/island-text";
+import { LevelMeter } from "@/components/islandcn/level-meter";
 import { LinearProgress } from "@/components/islandcn/linear-progress";
 import { Spinner } from "@/components/islandcn/spinner";
 import { useActivity, useLatest } from "@/components/islandcn/use-activity";
@@ -38,10 +39,13 @@ export const PlayingIsland = ({ id, title, subtitle, art, playing, time, duratio
   const toggle = useLatest(onToggle);
   const sec = Math.floor(time);
   const progress = duration > 0 ? Math.min(1, time / duration) : 0;
-  useActivity(
+  const controls = useActivity(
     () => {
       const cover = <Artwork seed={title} src={art ?? undefined} size={22} radius={6} />;
-      const clock = (
+      // Like a phone's now playing: a live meter while it plays, the clock when paused.
+      const clock = playing ? (
+        <LevelMeter bars={4} color={STAMP} active />
+      ) : (
         <CompactText>
           <NumberText value={fmt(sec)} />
         </CompactText>
@@ -58,7 +62,7 @@ export const PlayingIsland = ({ id, title, subtitle, art, playing, time, duratio
               <Artwork seed={title} src={art ?? undefined} size={52} radius={14} />
             </ExpandedSide>
           ),
-          center: <TitleStack title={title} subtitle={subtitle} />,
+          center: <TitleStack title={title} subtitle={`${subtitle} · ${fmt(sec)} / ${fmt(duration)}`} />,
           trailing: (
             <ExpandedSide height={44} align="end">
               <IslandRoundButton label={playing ? "Pause" : "Play"} onPress={() => toggle.current()} size={44}>
@@ -78,6 +82,13 @@ export const PlayingIsland = ({ id, title, subtitle, art, playing, time, duratio
     },
     [id, title, subtitle, art, playing, sec, duration],
   );
+  // A new song opens the island to the full player for a moment, then it folds back.
+  const shown = useRef<string | null>(null);
+  useEffect(() => {
+    if (!playing || !controls.id || shown.current === title) return;
+    shown.current = title;
+    controls.alert();
+  }, [playing, title, controls]);
   return null;
 };
 
