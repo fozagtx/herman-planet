@@ -1,5 +1,6 @@
 "use client";
 
+import { useBlocked } from "@/lib/use-blocked";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { enterGiveaway, joinWall, placeOrder, type PackState } from "@/app/pack-actions";
@@ -20,9 +21,10 @@ const Trap = () => (
 
 export function WallForm({ songs }: { songs: string[] }) {
   const [state, action, pending] = useActionState<PackState, FormData>(joinWall, null);
+  useBlocked(state, "wall");
   if (state?.ok) return <div className="surface p-6"><p className="text-xl font-semibold tracking-tight">Howl received.</p><p className="mt-1 text-[15px] text-muted-foreground">{state.message}</p></div>;
   return (
-    <form action={action} className="surface relative grid gap-4 p-6">
+    <form action={action} data-flow="wall" className="surface relative grid gap-4 p-6">
       <Trap />
       <div>
         <p className="text-xl font-semibold tracking-tight">Leave your mark on the wall</p>
@@ -52,9 +54,10 @@ export function WallForm({ songs }: { songs: string[] }) {
 
 export function GiveawayForm({ id, sample }: { id: string; sample: boolean }) {
   const [state, action, pending] = useActionState<PackState, FormData>(enterGiveaway, null);
+  useBlocked(state, "giveaway");
   if (state?.ok) return <p role="status" className="rounded-[13px] bg-sunk p-4 text-[15px] font-medium">{state.message}</p>;
   return (
-    <form action={action} className="relative grid gap-3">
+    <form action={action} data-flow="giveaway" className="relative grid gap-3">
       <Trap />
       <input type="hidden" name="giveawayId" value={id} />
       <div className="grid gap-3 sm:grid-cols-3">
@@ -73,8 +76,8 @@ export function GiveawayForm({ id, sample }: { id: string; sample: boolean }) {
   );
 }
 
-/** Live countdown to a giveaway's end, computed in the browser. */
-export function Countdown({ endsAt }: { endsAt: string }) {
+/** Live countdown to a giveaway's end, computed in the browser. "boxes" shows days, hours, minutes, seconds. */
+export function Countdown({ endsAt, variant = "inline" }: { endsAt: string; variant?: "inline" | "boxes" }) {
   const [now, setNow] = useState<number | null>(null);
   useEffect(() => {
     const tick = () => setNow(Date.now());
@@ -82,10 +85,27 @@ export function Countdown({ endsAt }: { endsAt: string }) {
     const id = setInterval(tick, 1000);
     return () => { clearTimeout(first); clearInterval(id); };
   }, []);
-  if (now === null) return <span className="num">Ends {new Date(endsAt).toUTCString().slice(5, 16)}</span>;
-  const ms = Math.max(0, new Date(endsAt).getTime() - now);
-  const d = Math.floor(ms / 86_400_000), h = Math.floor(ms / 3_600_000) % 24, m = Math.floor(ms / 60_000) % 60, s = Math.floor(ms / 1000) % 60;
-  return <span className="num">{ms === 0 ? "Closed" : `${d}d ${h}h ${String(m).padStart(2, "0")}m ${String(s).padStart(2, "0")}s left`}</span>;
+  const ms = now === null ? null : Math.max(0, new Date(endsAt).getTime() - now);
+  const parts = ms === null ? null : [
+    { v: Math.floor(ms / 86_400_000), l: "Days" },
+    { v: Math.floor(ms / 3_600_000) % 24, l: "Hours" },
+    { v: Math.floor(ms / 60_000) % 60, l: "Mins" },
+    { v: Math.floor(ms / 1000) % 60, l: "Secs" },
+  ];
+  if (variant === "boxes") {
+    return (
+      <div className="grid grid-cols-4 gap-2" role="timer" aria-label="Time left to enter">
+        {(parts ?? [{ v: 0, l: "Days" }, { v: 0, l: "Hours" }, { v: 0, l: "Mins" }, { v: 0, l: "Secs" }]).map((p) => (
+          <div key={p.l} className="rounded-[13px] bg-ink px-2 py-3 text-center text-surface">
+            <p className="num font-[family-name:var(--font-serif)] text-[34px] leading-none md:text-[40px]">{parts ? String(p.v).padStart(2, "0") : "··"}</p>
+            <p className="mt-1 text-[10px] font-medium uppercase tracking-wider text-surface/55">{p.l}</p>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (!parts) return <span className="num">Ends {new Date(endsAt).toUTCString().slice(5, 16)}</span>;
+  return <span className="num">{ms === 0 ? "Closed" : `${parts[0].v}d ${parts[1].v}h ${String(parts[2].v).padStart(2, "0")}m ${String(parts[3].v).padStart(2, "0")}s left`}</span>;
 }
 
 type BuyItem = { id: string; title: string; price: string; imageUrl: string | null; sizes: string | null; buyUrl: string | null; sample: boolean; kind: "merch" | "unreleased"; online: boolean };
@@ -94,6 +114,7 @@ type BuyItem = { id: string; title: string; price: string; imageUrl: string | nu
 export function BuyButton({ item }: { item: BuyItem }) {
   const ref = useRef<HTMLDialogElement>(null);
   const [state, action, pending] = useActionState<PackState, FormData>(placeOrder, null);
+  useBlocked(state, "buy");
   const sizes = (item.sizes ?? "").split(",").map((x) => x.trim()).filter(Boolean);
   const [pay, setPay] = useState<"bachs" | "contact">("bachs");
   useEffect(() => {
@@ -128,7 +149,7 @@ export function BuyButton({ item }: { item: BuyItem }) {
           {state?.ok ? (
             <p role="status" className="mt-5 rounded-[13px] bg-sunk p-4 text-[15px] font-medium">{state.message}</p>
           ) : (
-            <form action={action} className="relative mt-5 grid gap-3">
+            <form action={action} data-flow="buy" className="relative mt-5 grid gap-3">
               <Trap />
               <input type="hidden" name="itemId" value={item.id} />
               <div className="grid grid-cols-[1fr_96px] gap-3">

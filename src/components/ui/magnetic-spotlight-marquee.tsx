@@ -306,7 +306,7 @@ export function MagneticSpotlightMarquee({
       >
         {/* Title */}
         <h1 
-          className="text-[15vw] md:text-[12rem] font-normal leading-[0.85] tracking-tighter mb-20 text-center flex flex-col items-center"
+          className="text-[15vw] md:text-[min(12rem,19svh)] font-normal leading-[0.85] tracking-tighter mb-6 md:mb-0 md:mt-10 text-center flex flex-col items-center"
           style={{ fontFamily: "var(--font-serif), serif" }}
         >
           {title.map((line, idx) => (

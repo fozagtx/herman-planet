@@ -1,5 +1,6 @@
 "use client";
 
+import { useBlocked } from "@/lib/use-blocked";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { bookTickets, type EventState } from "@/app/event-actions";
@@ -14,6 +15,7 @@ type Props = { id: string; title: string; when: string; place: string; price: st
 export function TicketButton(e: Props) {
   const ref = useRef<HTMLDialogElement>(null);
   const [state, action, pending] = useActionState<EventState, FormData>(bookTickets, null);
+  useBlocked(state, "book");
   const [pay, setPay] = useState<"bachs" | "contact">("bachs");
   useEffect(() => {
     if (state?.redirect) window.location.assign(state.redirect);
@@ -41,7 +43,7 @@ export function TicketButton(e: Props) {
           {state?.ok ? (
             <p role="status" className="mt-5 rounded-[13px] bg-sunk p-4 text-[15px] font-medium">{state.message}</p>
           ) : (
-            <form action={action} className="relative mt-5 grid gap-3">
+            <form action={action} data-flow="book" className="relative mt-5 grid gap-3">
               <input name="website" tabIndex={-1} autoComplete="off" aria-hidden className="absolute left-[-9999px] h-0 w-0 opacity-0" />
               <input type="hidden" name="eventId" value={e.id} />
               <input type="hidden" name="free" value={e.free ? "1" : "0"} />
