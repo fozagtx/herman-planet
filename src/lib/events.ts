@@ -83,3 +83,8 @@ export async function markTicketPaid(id: string) {
 export async function setTicketStatus(id: string, status: Ticket["status"]) {
   await db.update(eventTickets).set({ status }).where(eq(eventTickets.id, id));
 }
+
+export async function getTicketByCheckout(checkoutId: string) {
+  const [r] = await db.select({ t: eventTickets, amount: events.amount }).from(eventTickets).innerJoin(events, eq(eventTickets.eventId, events.id)).where(eq(eventTickets.checkoutId, checkoutId)).limit(1);
+  return r ? { ...r.t, unitAmount: r.amount } : undefined;
+}

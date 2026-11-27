@@ -163,3 +163,8 @@ export async function deleteItem(id: string) {
   // Orders for this item are removed with it (cascade); its photo stays unreferenced.
   await db.delete(packItems).where(eq(packItems.id, id));
 }
+
+export async function getOrderByCheckout(checkoutId: string) {
+  const [r] = await db.select({ o: packOrders, amount: packItems.amount }).from(packOrders).innerJoin(packItems, eq(packOrders.itemId, packItems.id)).where(eq(packOrders.checkoutId, checkoutId)).limit(1);
+  return r ? { ...r.o, unitAmount: r.amount } : undefined;
+}

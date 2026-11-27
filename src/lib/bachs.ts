@@ -15,5 +15,5 @@ export function bachs(): Bachs | null {
 
 export const paymentsOn = () => !!process.env.BACHS_API_KEY;
 
-/** Checkout statuses that mean the money arrived. */
+/** Checkout statuses that mean the money arrived (checked when the fan returns from checkout). */
 export const isPaidStatus = (s: unknown) => typeof s === "string" && /^(paid|succeeded|success|completed|complete)$/i.test(s);
