@@ -1,159 +1,297 @@
-# Behind the Hook · Herman Suede
+# Herman Planet · Behind the Hook
 
-A track-first home for Herman Suede. A listener lands on a song, hears it, opens the story behind specific moments (sound, lyrics, production, credits), goes to the official release, and follows Herman for what comes next. His team runs all of it from one page, `/studio`.
+Herman Suede's home on the web: a track-first fan site where a listener hears a song, opens the story behind specific moments, goes to the official release, and joins **the Pack**, his fan community, for shows, meetups, merch, unreleased music and giveaways. Herman's team runs all of it from a private page, **Studio**.
 
-Live: https://herman-planet.vercel.app
+**Live:** https://herman-planet.vercel.app
 
-| Route | Who it's for | What it does |
-|---|---|---|
-| `/` | Listeners | Herman's site: the new single, every release with previews, his Spotify numbers, about, lines from the song, eight years of covers, video, follow |
-| `/t/she-get` | Listeners | The track page: the real song via Spotify, timed moments, credits, more releases, follow |
-| `/t/she-get/m/42` | Shared links | Same page, opened on a marked moment (here 0:42), with its own share image |
-| `/pack` | Fans | The Pack: Herman's fan community. Wolf-led page with the fan wall, giveaways, merch and unreleased music |
-| `/t/<song>` | Listeners | A song page for every release: full song via Spotify where we have its id, Apple's official preview otherwise, with its sourced story |
-| `/studio` | Herman's team (passcode) | Approve notes, edit track details and links, publish a live update, add tracks |
+---
 
-## How it answers the brief
+## Table of contents
+
+1. [What's in it](#1-whats-in-it)
+2. [How it answers the brief](#2-how-it-answers-the-brief)
+3. [Pages and routes](#3-pages-and-routes)
+4. [Tech stack](#4-tech-stack)
+5. [Project structure](#5-project-structure)
+6. [Data model](#6-data-model)
+7. [Run it locally](#7-run-it-locally)
+8. [Environment variables](#8-environment-variables)
+9. [Database: migrations and seed data](#9-database-migrations-and-seed-data)
+10. [Deploy to Vercel](#10-deploy-to-vercel)
+11. [Payments with Bachs](#11-payments-with-bachs)
+12. [Studio: the team's guide](#12-studio-the-teams-guide)
+13. [Content and sources](#13-content-and-sources)
+14. [Design system](#14-design-system)
+15. [Accessibility and quality](#15-accessibility-and-quality)
+16. [Scripts](#16-scripts)
+17. [Troubleshooting](#17-troubleshooting)
+18. [Credits and licences](#18-credits-and-licences)
+
+---
+
+## 1. What's in it
+
+**For listeners**
+
+- **Welcome to Herman Planet:** a two second intro on each page load. Herman's face pops up as a planet, the name rises, and the layer wipes up into the site. Tap or Enter skips it. Off for reduced motion.
+- **Hero:** his photo and covers move past. Hover pauses the strip, a tap plays that song's official preview.
+- **New single, She Get:** a launch ticker, "Out now · Released N days ago", the comeback story, and the moments inside the song.
+- **Every release:** a carousel of real covers; the active cover plays its preview and shows what inspired the song, with a link to the source.
+- **Pick a mood:** a gear you rotate (drag, arrow keys or tap) to find songs for a mood. Moods come only from published song stories.
+- **Streams:** 3.5M+ plays and counting (Spotify top four plus Audiomack), dated, with the breakdown.
+- **Song pages for every release** (`/t/<song>`): the full song through Spotify where we have its id, Apple's official 30 second preview otherwise, timed moments, credits, the story.
+- **Live status island:** one black pill at the top (islandcn) shows what's playing, opens like an iPhone's when a song starts, and shows each save in Studio.
+- **Follow:** Spotify, Apple Music, YouTube, Instagram, and the next show or meetup.
+
+**The Pack** (`/pack`), from Herman's own review
+
+- **How the pack was built:** a sourced timeline from 2017 to 2026, with Sarkodie at 2019 and Drake under "Inspired by", each photo credited.
+- **Shows & meetups:** tickets for shows, RSVP for free meetups, places left, capacity enforced.
+- **Giveaway:** prize, live countdown, one entry per contact, random draw.
+- **The wall:** fans post a note and the song that got them; only notes the team features appear.
+- **Shop:** merch and unreleased music. Fans pay with Bachs (card or mobile money) or ask the team to contact them.
+
+**For Herman's team** (`/studio`, passcode)
+
+- Timed notes with approval, track details, live update, new tracks.
+- The Pack: name, orders, shows and meetups with bookings, fan wall moderation, giveaways, shop with photo upload, sample data removal.
+
+## 2. How it answers the brief
 
 | Brief | Where |
 |---|---|
-| 01 Hear it: a fan arrives through a shared song or clip | Moment links (`/t/[slug]/m/[seconds]`) open on that second; the share sheet on every moment makes them |
-| 02 Explore: approved preview with timed notes, with credits | Timeline markers and a moment list; each note has its body, credits and source |
-| 03 Listen in full: official release, related tracks | Spotify, Apple Music and YouTube buttons; "More from Herman" carousel with playable previews |
-| 04 Come back: follow future releases, approved live update | "Follow on Spotify", Apple Music, YouTube, Instagram; the Live card shows an update only after the team approves it in Studio |
-| Demo: jump to a marked moment, open the production note, move to the official release | Open `/t/she-get/m/20`, press Play, read the note, press Spotify |
-| Artist-approved notes | Fans only ever load notes with `status = approved` (enforced in the query, `src/lib/store.ts`) |
-| Cleared media | The song plays through Spotify's official embed; previews and artwork are Apple's official assets |
-| Working links | Every outbound link was checked to return 200 on 27 Nov 2026 |
-| City-by-city demand | Left as a question for Herman's team, as the brief says. No fan data is collected. |
+| 01 Hear it: a fan arrives through a shared song or clip | Moment links (`/t/<song>/m/<seconds>`) open on that second, with a share image; the share sheet makes them |
+| 02 Explore: approved preview, timed notes on sound, lyrics or production, with credits | Timeline markers and moment list on each song page; notes show only when approved in Studio |
+| 03 Listen in full: official release, related tracks | Spotify, Apple Music and YouTube buttons; "More from Herman" carousel; a song page for every release |
+| 04 Come back: follow future releases, approved live update | Follow buttons; the Live card shows the next show or an approved update |
+| Demo: jump to a marked moment, open the production note, go to the official release | `/t/she-get/m/20` → Play → read the note → Spotify |
+| Artist-approved notes | Enforced in the query (`src/lib/store.ts`): fans only ever load `approved` notes |
+| Cleared media | Full songs via Spotify's official embed; previews and artwork are Apple's official assets |
+| Working links | Every outbound link checked on 27 Nov 2026 |
+| City-by-city demand | Left to Herman's team, as the brief says; no fan data collected for it |
 
-## Studio: the team's backend
+## 3. Pages and routes
 
-`/studio` is the one place Herman's team changes the site. Sign in with the shared passcode (`STUDIO_PASSCODE`).
-
-- **Timed notes:** add a note at a second in the song, send it for review, approve it. Editing a live note sends it back to review, because approval covers the exact words.
-- **Live update:** write a title and details, tick "Approved" and it shows in the Live card on the home and track pages. Unapproved, fans see "New dates, coming soon."
-- **Track details:** title, year, length, hook second, Spotify track link, cover image, release links, credits (`Role: Name` per line).
-- **Add a track:** title, year, length, Spotify link, cover. It goes live at `/t/<title>`.
-
-Security: the session cookie holds an HMAC of the passcode, not the passcode. Every Studio server action calls `requireTeam()` first, because server actions can be called by direct POST. Rotate the passcode by changing `STUDIO_PASSCODE` and redeploying; everyone is signed out.
-
-## The Pack (from Herman's review)
-
-Herman asked for "a section dedicated to my fans and that sense of community", with lone-wolf imagery, merch, giveaways and unreleased music. `/pack` does that, run entirely from **Studio → The Pack**:
-
-- **Name:** the team sets what Herman calls his fans (shown everywhere). It defaults to "The Pack" until set.
-- **Fan wall:** fans post a note (name, optional city and song, consent to be shown). Nothing appears until the team features it.
-- **Giveaways:** the team opens one with a prize and an end date; fans enter once each; the team draws a random winner. Entries stay private; the site shows a winner's first name and city only.
-- **Shop:** merch and unreleased music. Fans press Buy, pick a size and quantity, and either pay online with **Bachs** (card or mobile money, when a key is set and the item has an amount) or place an order the team confirms. Orders, sample or real, land in Studio → The Pack.
-- **Sample data:** run `npm run db:seed-pack` to add example wall notes, shop items and a live giveaway, all tagged "Sample" on the site. Samples never charge. Remove them in one click in Studio.
-- **Proof, sourced:** After Prep (2019) sold 1,000+ tickets and a 15-school meet-and-greet tour (The Upper Entertainment); his feature on Sarkodie's *Black Love* ("Womba", 2019, Wikipedia); his own words to fans (24 Nov 2026).
-- **Photos:** wolf by Rob Bertrand (Pexels, free licence). Sarkodie by Owula kpakpo (CC BY-SA 4.0) and Drake by The Come Up Show (CC BY 2.0), both via Wikimedia Commons, credited on the page with how each relates to Herman.
-
-### Payments with Bachs
-
-1. Add `BACHS_API_KEY` (`sk_sandbox_…` to test, `sk_live_…` for real money) and `BACHS_WEBHOOK_SECRET` to Vercel and `.env.local`.
-2. In the Bachs dashboard, point a webhook at `https://herman-planet.vercel.app/api/webhooks/bachs`.
-3. In Studio → The Pack, give each item an amount and currency (e.g. 250.00 GHS).
-
-Two ways to pay, the fan picks: **Pay now with Bachs** (card or mobile money) or **Have Herman's team contact me** (the team confirms and sends payment details).
-
-### Listing merch from Studio
-
-Studio → The Pack → Shop → **New item**: upload a photo (resized in the browser, stored in Neon, served from `/api/pack-image/<id>`), set the title, the price shown, the amount Bachs charges and sizes, tick "In the shop", save. Every item can be edited (replace photo, change price) or deleted later.
-
-Buy then creates the order, opens a Bachs checkout (`reference` = order id) and sends the fan there. The order turns **Paid** when the signed webhook arrives, or when the fan returns and the site checks the checkout's status with Bachs. Without a key, the shop falls back to "place an order, the team sends payment details".
-
-## What is real and what is not
-
-Real:
-- "She Get" (released 25 Nov 2026) plays through the Spotify embed. Signed in to Spotify, a listener hears the full song and can jump to any moment. Signed out, Spotify plays its own 30 second preview and the page says so.
-- Covers and 30 second previews come from Apple (iTunes Lookup API). Credits are as reported at release (MILN, BNYX®, realsmart, rain. labs). The One by One video is the official upload.
-- Spotify numbers (17,445 monthly listeners; plays per song) were read from his public artist page on 27 Nov 2026. Spotify's API no longer exposes play counts, so `src/lib/stats.ts` is updated by hand.
-- Notes, track details and live updates are stored in Neon Postgres.
-
-Not yet from Herman's team:
-- Note text is drawn from published coverage of the single. Those notes show "From the release coverage" instead of an approval badge until the team rewrites and approves them in Studio.
-- Note timestamps are estimates. The team sets the real seconds in Studio.
-- No shows are announced, so the Live card reads "New dates, coming soon."
-
-## Design
-
-- **Paper & Ink**: warm paper, violet-black ink, colour only where it means something (peach, coral and lavender mark Sound, Lyrics and Production; `#edff00` on ink marks "Approved"). Geist for text, Instrument Serif for display.
-- **Mobile first**: every section checked at 375px with no sideways scroll. On phones the track page puts a small cover beside the title so the moments are in the first screen.
-- **Motion**: a 2 second first-visit intro, sections that ease in on scroll, Lenis smooth scroll. All of it is off for visitors who prefer reduced motion.
-- **Live status island (islandcn)**: one black pill at the top of every page. It shows what is playing (hero previews, the release carousel, the song on the track page with the moment you are in) and, in Studio, each save: a spinner, then a check, "Live" on approve, or what to fix. No demo data: it only appears for real playback and real saves.
-- **Players stay in sync**: the hero player, the release carousel player and the Spotify preview all show live progress.
-- **Accessibility**: 44px touch targets, a visible ink focus ring on everything, a keyboard-operable timeline (arrow keys seek 5 seconds), labelled form fields, skeletons while loading.
-
-VengeanceUI components and what each one does here:
-
-| Component | Job |
+| Route | What it is |
 |---|---|
-| Intro (own, GSAP) | "Welcome to Herman Planet": his face pops up as a planet, the name rises, the planet fills the screen and wipes into the homepage. About 2 seconds, once per session, tap or Enter skips, off for reduced motion |
-| Magnetic Spotlight Marquee | Hero: his photo and covers move past; hover pauses, a tap plays that song's preview |
-| Glow Border Card | The new single's cover, edged in the three note colours |
-| Diagonal Carousel + Music Player | Every release. Won a side-by-side test against Perspective, Cylinder and Circular: it keeps square covers whole, shows titles and can drive the player |
-| Circular Gallery | A ring of his covers around his Spotify monthly listeners |
-| Gooey Text Reveal | His two-sentence bio (from his Spotify profile), revealed on scroll |
-| Verse Cards | Lines from "She Get", dealt over the cover |
-| Image Collage | Eight years of covers; tap to line them up, 2018 to 2026 |
-| Share Sheet | Share the song or a moment (copy, QR, apps) |
-| Aurora Hero, Candy Button, Awwwards Nav | Closing band, primary buttons, bottom dock |
+| `/` | Home |
+| `/t/<song>` | Song page, e.g. `/t/she-get`, `/t/one-by-one`, `/t/kumbaya` |
+| `/t/<song>/m/<seconds>` | Song page opened on a moment, with its own share image |
+| `/pack` | The Pack |
+| `/pack/order/<id>` | Order result after checkout (verifies payment with Bachs) |
+| `/pack/ticket/<id>` | Ticket result after checkout |
+| `/studio` | Studio sign-in, notes, track details, live update, new tracks |
+| `/studio/pack` | Studio for the Pack |
+| `/api/webhooks/bachs` | Bachs webhook (signed) |
+| `/api/pack-image/<id>` | Photos uploaded in Studio |
+| `/api/health` | `{"status":"ok","database":"connected"}` |
 
-## Stack
+Studio is not linked from the public site. Share its URL with the team only.
 
-- Next.js 16 (App Router, Cache Components), React 19, Tailwind CSS 4
-- Neon Postgres with Drizzle ORM (`src/db`)
-- Spotify Embed iFrame API (`src/components/use-spotify-player.ts`); a Web Audio stem player for tracks with cleared stems (`src/components/use-stem-player.ts`)
-- Lenis, GSAP, Framer Motion, react-icons (brand marks)
+## 4. Tech stack
 
-## Run it locally
+| Layer | Choice |
+|---|---|
+| Framework | Next.js 16 (App Router, Cache Components), React 19, TypeScript |
+| Styling | Tailwind CSS 4, Paper & Ink tokens (`src/app/globals.css`) |
+| Database | Neon Postgres, Drizzle ORM and drizzle-kit migrations |
+| Payments | Bachs (`@bachs/sdk` 2.0.0): checkout sessions, signed webhooks |
+| Playback | Spotify Embed iFrame API; Web Audio for previews and stems |
+| Live status | islandcn (Dynamic Island engine, installed with shadcn) |
+| Motion | GSAP, Framer Motion, Lenis smooth scroll |
+| UI pieces | VengeanceUI (marquee, carousels, verse cards, aurora, glow border, share sheet, music player, dock), react-icons |
+| Hosting | Vercel |
+
+## 5. Project structure
+
+```
+src/
+  app/
+    page.tsx                    home
+    t/[slug]/                   song pages, moment links, share image
+    pack/                       the Pack, order and ticket result pages
+    studio/                     Studio (sign-in, notes, track, live update)
+    studio/pack/                Studio for the Pack
+    api/                        webhooks/bachs, pack-image, health
+    actions.ts                  Studio actions for notes and tracks
+    pack-actions.ts             fan wall, giveaways, shop, orders
+    event-actions.ts            shows, meetups, tickets
+  components/
+    landing/                    home sections (hero, intro, music, mood dial, stats…)
+    pack/                       Pack forms, ticket sheet
+    track-experience.tsx        song page
+    islands.tsx                 live status activities
+    ui/  islandcn/              vendored registry components
+  db/
+    schema.ts  migrations/      tables and migrations
+    seed.ts  seed-pack.ts       track data; Pack sample data
+  lib/
+    store.ts  pack.ts  events.ts   database reads and writes
+    auth.ts                     Studio session
+    bachs.ts                    Bachs client
+    catalogue.ts  stats.ts  platforms.tsx   releases, numbers, profiles
+```
+
+## 6. Data model
+
+| Table | Holds |
+|---|---|
+| `tracks` | Song pages the team manages (She Get): Spotify id, artwork, credits, links, live update |
+| `notes` | Timed notes: second, kind (sound, lyrics, production), text, credits, status (`draft`, `in_review`, `approved`) |
+| `site_settings` | Team settings, e.g. the Pack's name |
+| `pack_posts` | Fan wall notes, status (`pending`, `featured`, `hidden`) |
+| `pack_items` | Merch and unreleased music: price shown, amount and currency for Bachs, sizes, photo |
+| `pack_orders` | Orders: item, size, quantity, contact, status (`new`, `confirmed`, `paid`, `fulfilled`, `cancelled`), Bachs checkout id |
+| `events` | Shows and meetups: date, venue, city, price, amount, capacity |
+| `event_tickets` | Bookings and RSVPs, same statuses as orders |
+| `giveaways`, `giveaway_entries` | Giveaways and one entry per contact |
+| `pack_images` | Photos uploaded in Studio |
+
+Rules worth knowing:
+- Fans only see approved notes, featured wall posts, live items and live events.
+- Editing an approved note sends it back to review.
+- Ticket capacity is checked inside a transaction that locks the event row, so a show can't oversell.
+- An order or ticket only becomes `paid` from a signed Bachs webhook or a status check with Bachs, never from the browser alone.
+- Sample rows (`sample = true`) are tagged on the site, never charged, and removed in one click.
+
+## 7. Run it locally
+
+You need Node.js 22 or later and a Neon project (free tier is fine).
 
 ```bash
+git clone https://github.com/fozagtx/herman-planet.git
+cd herman-planet
 npm install
-cp .env.example .env.local   # fill in Neon strings and a Studio passcode
-npm run db:migrate           # create tables
-npm run db:seed              # add She Get and its notes (safe to re-run)
-npm run dev
+cp .env.example .env.local      # then fill it in, see below
+npm run db:migrate              # create the tables
+npm run db:seed                 # She Get and its notes
+npm run db:seed-pack            # optional: Pack sample data
+npm run dev                     # http://localhost:3000
 ```
 
-`.env.local`:
+Check `http://localhost:3000/api/health` returns `"database":"connected"`.
 
-```
-DATABASE_URL='postgresql://…-pooler…/neondb?sslmode=verify-full'
-DATABASE_URL_UNPOOLED='postgresql://…/neondb?sslmode=verify-full'
-NEXT_PUBLIC_SITE_URL='http://localhost:3000'
-STUDIO_PASSCODE='a-long-random-string'
-```
+## 8. Environment variables
 
-Health check: `GET /api/health` returns `{"status":"ok","database":"connected"}`.
+| Name | Required | What it's for |
+|---|---|---|
+| `DATABASE_URL` | Yes | Neon pooled connection (host contains `-pooler`), `sslmode=verify-full` |
+| `DATABASE_URL_UNPOOLED` | Yes | Neon direct connection, used by migrations and seeds |
+| `NEXT_PUBLIC_SITE_URL` | Yes | Public base URL, e.g. `https://herman-planet.vercel.app`; used for share images and checkout return links |
+| `STUDIO_PASSCODE` | Yes | Shared passcode for `/studio`. Rotate it to sign everyone out |
+| `BACHS_API_KEY` | For payments | `sk_sandbox_…` to test, `sk_live_…` for real money. Without it, buyers can only ask the team to contact them |
+| `BACHS_WEBHOOK_SECRET` | For payments | Signing secret of your Bachs webhook endpoint |
 
-## Data model
+Never commit `.env.local`. It's in `.gitignore`.
 
-`src/db/schema.ts`
+## 9. Database: migrations and seed data
 
-- `tracks`: slug, title, artist, year, duration, hook second, Spotify track id, artwork, preview, credits, release links, related tracks, live update (`{title, body, approved}`), optional stems.
-- `notes`: track, second (`t`), kind, title, body, credits, optional stem layers, `status` (`draft`, `in_review`, `approved`), who approved and when.
-- `follows`: kept from an earlier version; nothing writes to it now.
+- Change `src/db/schema.ts`, then `npm run db:generate` to write a migration and `npm run db:migrate` to apply it.
+- `npm run db:seed` adds the She Get track and its notes. Safe to re-run.
+- `npm run db:seed-pack` adds sample wall notes, shop items, a giveaway, a show and a meetup, all tagged **Sample**. Remove them in Studio → The Pack → "Remove all sample data".
 
-## Project layout
+## 10. Deploy to Vercel
 
-```
-src/app/page.tsx                     landing
-src/app/t/[slug]/...                 track page, moment links, share image
-src/app/studio/                      Studio (sign-in, forms)
-src/app/actions.ts                   every write, each behind requireTeam()
-src/lib/auth.ts                      Studio session
-src/lib/store.ts                     all database reads and writes
-src/lib/catalogue.ts                 releases (Apple artwork and previews)
-src/lib/stats.ts                     Spotify numbers, dated
-src/lib/platforms.tsx                official profiles and brand marks
-src/components/track-experience.tsx  track page
-src/components/landing/*             landing sections
-src/components/follow.tsx            follow + live update
-```
+1. Push the repo to GitHub and import it in Vercel (or run `vercel link`).
+2. Add the variables from section 8 to the Production environment.
+3. Run the migrations once against the production database: `npm run db:migrate` with `.env.local` pointing at it.
+4. Deploy: push to `main`, or `vercel deploy --prod`.
+5. Check `/api/health`, open `/`, `/pack` and `/studio`.
 
-## Deploy
+`NEXT_PUBLIC_*` values are built into the bundle, so redeploy after changing one.
 
-The repo is connected to Vercel (`herman-planet`). Set `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `NEXT_PUBLIC_SITE_URL` and `STUDIO_PASSCODE` in the project, then push to `main` or run `vercel deploy --prod`.
+## 11. Payments with Bachs
+
+**Setup**
+
+1. Create a sandbox key in Bachs and set `BACHS_API_KEY`.
+2. In the Bachs dashboard, add a webhook to `https://<your-domain>/api/webhooks/bachs` and set `BACHS_WEBHOOK_SECRET` to its signing secret.
+3. In Studio, give each item or event an **amount** and **currency** (e.g. `150.00`, `GHS`).
+4. When everything works in sandbox, swap in your `sk_live_` key. No code changes.
+
+**Flow**
+
+1. The fan presses Buy or Get tickets and chooses **Pay now with Bachs** or **Have Herman's team contact me**.
+2. With Bachs: the site creates the order or ticket, then a Bachs checkout session with `reference` set to its id and `metadata` describing it, and sends the fan to `checkout_url`. Payment methods include cards and mobile money (e.g. MoMo GHS).
+3. The order turns **Paid** when the signed webhook arrives, or when the fan returns to the result page and the site asks Bachs for the checkout's status.
+4. With "contact me": the order or ticket is held and the team follows up from Studio.
+
+Samples never create a checkout. Writes to Bachs use an idempotency key per order or ticket.
+
+## 12. Studio: the team's guide
+
+Open `/studio` and sign in with the passcode.
+
+**Studio**
+- **Timed notes:** add a note at a second in the song, send it for review, approve it. Only approved notes reach fans.
+- **Live update:** write it, tick Approved, save. It shows in the Live card.
+- **Track details:** title, Spotify link, cover, release links, credits (`Role: Name` per line).
+- **Add a track:** gives it a page at `/t/<title>`.
+
+**The Pack** (button at the top of Studio)
+- **Orders:** confirm, mark delivered, or cancel. Paid orders show as Paid.
+- **Shows & meetups:** add an event (photo, venue, date, price, amount, capacity), open or close bookings, confirm or cancel each booking, edit or delete.
+- **Name:** what Herman calls his fans.
+- **Fan wall:** feature or hide notes.
+- **Giveaways:** create, open, pause, draw a random winner. The site shows a winner's first name and city only.
+- **Shop:** upload a photo, set the price shown, the Bachs amount and sizes, tick "In the shop". Edit or delete any item.
+
+Every save shows on the island at the top: a spinner, then a check, "Live" or what to fix.
+
+## 13. Content and sources
+
+Nothing on the site is invented. Where we didn't have the team's own words, content comes from published sources and says so.
+
+- **Song stories:** Unorthodox Reviews, Ghana Music, Beatz Nation, The Vaultz, DCLeakers, Citi Newsroom. Each card links to its source.
+- **Timeline:** The Upper Entertainment, Ghana Music, Unorthodox Reviews, Wikipedia (Black Love), The Vaultz.
+- **Streams:** Spotify artist page and Audiomack, counted 27 Nov 2026. Update `src/lib/stats.ts` by hand (Spotify's API no longer exposes play counts).
+- **She Get notes:** drafted from release coverage and labelled "From the release coverage" until the team rewrites and approves them. Their timestamps are estimates.
+- **Sample data:** tagged "Sample" everywhere and never charged.
+
+## 14. Design system
+
+- **Paper & Ink:** warm paper `#efeeea`, violet-black ink `#1d1730`. Colour only where it means something: peach, coral and lavender mark Sound, Lyrics and Production; `#edff00` marks "live" and progress.
+- **Type:** Geist for text, Instrument Serif for display.
+- **Surfaces:** one card style (`.surface`), pill buttons with 44px targets and press feedback.
+- **Mobile first:** every page checked at 375px with no sideways scroll.
+
+## 15. Accessibility and quality
+
+- Visible ink focus ring on every control; dialogs trap focus.
+- Keyboard-operable timeline (arrow keys seek) and mood dial.
+- Labelled form fields, plain one-line errors, skeletons while loading.
+- All motion is off with `prefers-reduced-motion`.
+- `npx tsc --noEmit` and `npx eslint src` are clean (vendored registry code is excluded from lint).
+
+## 16. Scripts
+
+| Script | Does |
+|---|---|
+| `npm run dev` | Local dev server |
+| `npm run build` / `npm start` | Production build and server |
+| `npm run lint` | ESLint |
+| `npm run db:generate` | Write a migration from `schema.ts` |
+| `npm run db:migrate` | Apply migrations |
+| `npm run db:seed` | She Get and its notes |
+| `npm run db:seed-pack` | Pack sample data |
+
+## 17. Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| `/api/health` says unreachable | Check `DATABASE_URL`; Neon may be waking from idle, retry |
+| Studio keeps asking for the passcode | `STUDIO_PASSCODE` isn't set in that environment |
+| Buy only offers "contact me" | `BACHS_API_KEY` isn't set, or the item has no amount |
+| Orders never turn Paid | Check the webhook URL and `BACHS_WEBHOOK_SECRET`; the endpoint returns 503 when the secret is missing |
+| Song page plays only 30 seconds | The visitor isn't signed in to Spotify; the page says so |
+| Share images show localhost | Set `NEXT_PUBLIC_SITE_URL` and redeploy |
+| Photo upload fails | Use JPG, PNG or WebP under 2.5 MB (photos are resized in the browser first) |
+
+## 18. Credits and licences
+
+- **Wolf photo:** Rob Bertrand, Pexels (Pexels licence).
+- **Sarkodie photo:** Owula kpakpo, CC BY-SA 4.0, Wikimedia Commons.
+- **Drake photo:** The Come Up Show, CC BY 2.0, Wikimedia Commons. Drake is not affiliated with this site.
+- **Cover art and previews:** Apple Music (iTunes Lookup API). **Full songs:** Spotify embed.
+- **Components:** VengeanceUI, islandcn (Hugeicons glyphs, MIT), shadcn/ui.
+- **Herman's photo:** from the project brief.
