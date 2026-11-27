@@ -38,8 +38,8 @@ function Header() {
         </p>
       </div>
       <nav className="flex gap-2 text-sm font-semibold">
-        <Link href="/t/she-get" className="rounded-full border border-line px-4 py-2">Fan page ↗</Link>
-        <Link href="/team" className="rounded-full bg-ink px-4 py-2 text-surface">Demand</Link>
+        <Link href="/t/she-get" className="inline-flex min-h-11 items-center rounded-full border border-line bg-surface px-4">Fan page</Link>
+        <Link href="/team" className="inline-flex min-h-11 items-center rounded-full bg-ink px-4 text-surface">Fan demand</Link>
       </nav>
     </header>
   );
@@ -49,9 +49,24 @@ async function Notes() {
   const [all, tracks] = await Promise.all([getAllNotes(), getTracks()]);
   const featured = tracks.find((t) => t.slug === "she-get") ?? tracks[0];
   const notes = all.filter((n) => n.trackSlug === featured?.slug);
+  const approved = notes.filter((n) => n.status === "approved").length;
   return (
     <>
-      <ul className="mt-8 space-y-3">
+      {featured && (
+        <div className="surface mt-8 flex items-center gap-4 p-3">
+          {featured.artworkUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={featured.artworkUrl} alt="" className="h-16 w-16 rounded-[11px] object-cover" />
+          )}
+          <div className="flex-1">
+            <p className="text-lg font-semibold tracking-tight">{featured.title}</p>
+            <p className="text-[13px] text-muted-foreground">
+              <span className="num">{approved}</span> live · <span className="num">{notes.length - approved}</span> waiting
+            </p>
+          </div>
+        </div>
+      )}
+      <ul className="mt-4 space-y-3">
         {notes.map((n) => <NoteRow key={n.id} n={n} />)}
       </ul>
       <details className="mt-6 surface p-5">

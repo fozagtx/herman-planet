@@ -7,15 +7,35 @@ export function Dock() {
     <AwwwardsNav
       className="bg-surface"
       items={[
-        { label: "Listen", href: "/t/she-get/m/42" },
-        { label: "Studio", href: "/studio" },
-        { label: "Demand", href: "/team" },
+        { label: "Listen", href: "/t/she-get" },
+        { label: "Music", href: "#music" },
+        { label: "Sign up", href: "#signup" },
       ]}
       moreLabel="More"
       columns={[
-        { title: "For fans", links: [{ label: "Play from the hook", href: "/t/she-get/m/42" }, { label: "Whole track", href: "/t/she-get" }] },
-        { title: "For Herman's team", links: [{ label: "Approve notes", href: "/studio" }, { label: "Fan demand by city", href: "/team" }] },
-        { title: "For promoters", links: [{ label: "Export demand (CSV)", href: "/team/export" }] },
+        {
+          title: "Stream",
+          links: [
+            { label: "Spotify", href: "https://open.spotify.com/artist/795E5FXQUgbjuPBxk6igGm" },
+            { label: "Apple Music", href: "https://music.apple.com/us/artist/herman-suede/1301306379" },
+            { label: "YouTube", href: "https://www.youtube.com/HermanSuede" },
+          ],
+        },
+        {
+          title: "Follow",
+          links: [
+            { label: "Instagram", href: "https://www.instagram.com/hermansuede1/" },
+            { label: "X", href: "https://x.com/hermansuede" },
+            { label: "SoundCloud", href: "https://soundcloud.com/hermansuede" },
+          ],
+        },
+        {
+          title: "Herman's team",
+          links: [
+            { label: "Studio", href: "/studio" },
+            { label: "Fan demand", href: "/team" },
+          ],
+        },
       ]}
     />
   );

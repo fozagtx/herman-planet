@@ -28,7 +28,7 @@ export async function followAction(_prev: FollowState, form: FormData): Promise<
     consent,
   });
   revalidatePath("/team");
-  return { ok: true, message: `You're in. Approved updates only, and ${normaliseCity(city)} is on the map.` };
+  return { ok: true, message: `${normaliseCity(city)} is on Herman's map. Only news his team signs off will reach you.` };
 }
 
 function normaliseCity(c: string) {

@@ -7,15 +7,15 @@ export function Hero({ images }: { images: string[] }) {
     <MagneticSpotlightMarquee
       className="bg-paper dark:bg-paper"
       images={images}
-      title={["Behind", "the Hook"]}
-      subtitle={["Herman Suede", "She Get, explained"]}
+      title={["Herman", "Suede"]}
+      subtitle={["She Get", "Out now"]}
       paragraphs={[
-        ["Start at the hook.", "Tap a moment to see", "what went into it."],
-        ["Every note is approved", "by Herman's team,", "then the full release."],
+        ["Singer and songwriter", "from Accra, Ghana."],
+        ["Afrobeats and R&B,", "with Ga in the mix."],
       ]}
       navEmail="Herman Suede"
-      navLinks="Music, videos, live shows"
-      footerText="Move your cursor through the page. Scroll down to hear the hook."
+      navLinks="Music, Video, Sign up"
+      footerText=""
     />
   );
 }

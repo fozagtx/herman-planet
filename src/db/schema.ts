@@ -34,6 +34,9 @@ export const tracks = pgTable("tracks", {
   related: jsonb("related").$type<Track["related"]>().notNull(),
   liveUpdate: jsonb("live_update").$type<Track["liveUpdate"]>(),
   placeholderMedia: boolean("placeholder_media").notNull().default(true),
+  spotifyTrackId: text("spotify_track_id"),
+  previewUrl: text("preview_url"),
+  artworkUrl: text("artwork_url"),
 });
 
 export const notes = pgTable(

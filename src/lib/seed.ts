@@ -9,15 +9,14 @@ export const seed: Store = {
       title: "She Get",
       artist: "Herman Suede",
       year: "2026",
-      // Duration of the placeholder audio. The released track runs 3:26.
-      duration: 150,
+      duration: 206,
       hookAt: 42,
-      placeholderMedia: true,
-      stems: [
-        { id: "drums", label: "Drums", src: "/audio/placeholder/drums.mp3" },
-        { id: "bass", label: "Bass", src: "/audio/placeholder/bass.mp3" },
-        { id: "vocals", label: "Vocal stack", src: "/audio/placeholder/vocals.mp3" },
-      ],
+      placeholderMedia: false,
+      // Real song: Spotify embed. Artwork and preview are Apple's official assets.
+      spotifyTrackId: "0KvgjL7EWkXNgVMkbI1nHx",
+      previewUrl: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/86/7d/e7/867de7bf-28dd-5ed9-5497-8634939e1e33/mzaf_16667730978564218141.plus.aac.p.m4a",
+      artworkUrl: "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/f1/0b/45/f10b4518-97a4-e002-a624-1ca898aa5f64/823375590934_Cover.jpg/600x600bb.jpg",
+      stems: [],
       // Credits as reported at release (voxtrendy.net, 25 Nov 2026). Team to confirm.
       credits: [
         { role: "Artist", name: "Herman Suede" },
@@ -27,7 +26,7 @@ export const seed: Store = {
       ],
       // Checked 27 Nov 2026: each returns 200 and the right page.
       releases: [
-        { platform: "Spotify", href: "https://open.spotify.com/album/6iejq6RKBKmbyF8v7UQo6N" },
+        { platform: "Spotify", href: "https://open.spotify.com/track/0KvgjL7EWkXNgVMkbI1nHx" },
         { platform: "Apple Music", href: "https://music.apple.com/us/album/she-get/6833466578?i=6833466583" },
         { platform: "YouTube", href: "https://www.youtube.com/HermanSuede" },
       ],
@@ -35,11 +34,7 @@ export const seed: Store = {
         { slug: null, href: "https://open.spotify.com/track/0mfwWliY4X4TlfOHGJ3gru", title: "One by One (2020)", why: "Where the sound started" },
         { slug: null, href: "https://open.spotify.com/track/3MHTjBkjMmDu1fYjNDAy7F", title: "ONE BY ONE II ft. The Therapist (2025)", why: "Same song, five years on, with a Ga bridge" },
       ],
-      liveUpdate: {
-        approved: true,
-        title: "Demo live update",
-        body: "Herman's team posts approved show news here. Nothing appears until they sign it off.",
-      },
+      liveUpdate: null,
     },
     {
       slug: "behind-the-hook",
@@ -99,9 +94,8 @@ export const seed: Store = {
       t: 20,
       kind: "production",
       title: "Folk groove into synth drums",
-      body: "The kick drum picks up the cadence of the folk groove, so the switch to synth drums and bass lands without a seam. Tap below to hear the rhythm section alone.",
+      body: "The kick drum picks up the cadence of the folk groove, so the switch to synth drums and bass lands without a seam.",
       credits: ["Produced by MILN and BNYX®"],
-      layers: ["drums", "bass"],
       status: "approved",
       approvedBy: "Demo reviewer",
       approvedAt: "2026-11-27",
@@ -113,9 +107,8 @@ export const seed: Store = {
       t: 42,
       kind: "lyrics",
       title: "Dansoman, Dansoman",
-      body: "The hook is a joke every Accra listener knows: the long trek across town to see someone who lives all the way in Dansoman. Tap below to hear the vocal on its own.",
+      body: "The hook is a joke every Accra listener knows: the long trek across town to see someone who lives all the way in Dansoman.",
       credits: ["Words: Herman Suede"],
-      layers: ["vocals"],
       status: "approved",
       approvedBy: "Demo reviewer",
       approvedAt: "2026-11-27",
@@ -140,7 +133,7 @@ export const seed: Store = {
       t: 100,
       kind: "production",
       title: "How the mix holds it together",
-      body: "Waiting on Herman's team. Still a draft, so fans never see it.",
+      body: "Waiting on Herman's team.",
       credits: ["Mix & master: realsmart"],
       status: "draft",
       placeholder: true,

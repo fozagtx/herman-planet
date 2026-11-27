@@ -1,104 +1,68 @@
 import { Suspense } from "react";
-import Link from "next/link";
 import { Closing } from "@/components/landing/closing";
 import { Dock } from "@/components/landing/dock";
-import { HearTheHook } from "@/components/landing/hear-the-hook";
 import { Hero } from "@/components/landing/hero";
-import { Journey } from "@/components/landing/journey";
-import { Moments } from "@/components/landing/moments";
-import { momentCover, wordTile } from "@/lib/covers";
-import { getApprovedNotes, getFollows, getTrack } from "@/lib/store";
+import { LatestRelease } from "@/components/landing/latest-release";
+import { Lines } from "@/components/landing/lines";
+import { Music } from "@/components/landing/music";
+import { Video } from "@/components/landing/video";
+import { FollowForm } from "@/components/track-experience";
+import { CATALOGUE } from "@/lib/catalogue";
+import { getApprovedNotes, getTrack } from "@/lib/store";
 
 const SLUG = "she-get";
-const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-const KIND_LABEL = { sound: "Sound", lyrics: "Lyrics", production: "Production" } as const;
 
-const HERO_IMAGES = [
-  "/img/herman.jpg",
-  wordTile("Hear it", "sound"),
-  wordTile("Explore", "lyrics"),
-  "/img/herman.jpg",
-  wordTile("Listen", "production"),
-  wordTile("Come back", "sound"),
+const HERO_IMAGES = ["/img/herman.jpg", ...CATALOGUE.slice(0, 3).map((c) => c.art), "/img/herman.jpg", ...CATALOGUE.slice(3, 6).map((c) => c.art)];
+
+const SOCIALS = [
+  { label: "Spotify", href: "https://open.spotify.com/artist/795E5FXQUgbjuPBxk6igGm" },
+  { label: "Apple Music", href: "https://music.apple.com/us/artist/herman-suede/1301306379" },
+  { label: "YouTube", href: "https://www.youtube.com/HermanSuede" },
+  { label: "Instagram", href: "https://www.instagram.com/hermansuede1/" },
+  { label: "X", href: "https://x.com/hermansuede" },
+  { label: "SoundCloud", href: "https://soundcloud.com/hermansuede" },
+  { label: "Audiomack", href: "https://audiomack.com/hermansuede" },
 ];
 
 export default function Home() {
   return (
     <main className="flex w-full flex-1 flex-col">
       <Hero images={HERO_IMAGES} />
-      <HearTheHook placeholder />
-      <Journey />
-      <section className="border-y border-line bg-surface/50 py-20">
-        <div className="mx-auto max-w-6xl px-6 md:px-8">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">02 · Explore</p>
-          <h2 className="mt-3 max-w-2xl text-[clamp(32px,4.4vw,56px)] font-semibold leading-[0.98] tracking-[-0.04em]">
-            Every marked moment, approved by Herman&apos;s team.
-          </h2>
+      <Suspense fallback={<div className="mx-auto my-24 h-[520px] w-full max-w-6xl animate-pulse rounded-[15px] bg-sunk" />}>
+        <Release />
+      </Suspense>
+      <Music />
+      <div className="pt-24" />
+      <Lines />
+      <Video />
+      <section id="signup" className="mx-auto grid w-full max-w-6xl gap-10 px-6 pb-24 md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] md:px-8">
+        <div>
+          <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Shows</p>
+          <h2 className="mt-3 font-[family-name:var(--font-serif)] text-[clamp(44px,6vw,80px)] leading-[0.95]">No dates yet.</h2>
+          <p className="mt-5 max-w-sm text-[17px] leading-relaxed text-ink/75">
+            Tell us your city. When Herman plays near you, you hear first.
+          </p>
         </div>
-        <Suspense fallback={<div className="mx-auto mt-10 h-[690px] max-w-6xl animate-pulse rounded-[15px] bg-sunk" />}>
-          <MomentsData />
-        </Suspense>
-      </section>
-      <section className="mx-auto grid w-full max-w-6xl gap-4 px-6 py-24 md:grid-cols-2 md:px-8">
-        <Suspense fallback={<div className="h-56 animate-pulse rounded-[15px] bg-sunk md:col-span-2" />}>
-          <TeamCards />
-        </Suspense>
+        <FollowForm slug={SLUG} momentT={null} artist="Herman Suede" />
       </section>
       <Closing />
-      <footer className="mx-auto flex w-full max-w-6xl flex-wrap justify-between gap-3 px-6 pb-28 pt-8 text-[13px] text-muted-foreground md:px-8">
-        <span>Behind the Hook · a prototype for Herman Suede</span>
-        <span>Notes, media and links shown only once his team approves them.</span>
+      <footer className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-6 pb-28 pt-10 text-[13px] text-muted-foreground md:px-8">
+        <span>Herman Suede · Accra</span>
+        <nav className="flex flex-wrap gap-x-5 gap-y-2">
+          {SOCIALS.map((s) => (
+            <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="hover:text-ink">
+              {s.label}
+            </a>
+          ))}
+        </nav>
       </footer>
       <Dock />
     </main>
   );
 }
 
-async function MomentsData() {
-  const notes = await getApprovedNotes(SLUG);
-  return (
-    <Moments
-      moments={notes.map((n) => ({
-        t: n.t,
-        time: fmt(n.t),
-        title: n.title,
-        href: `/t/${SLUG}/m/${n.t}`,
-        src: momentCover({ time: fmt(n.t), title: n.title, kind: n.kind, label: KIND_LABEL[n.kind] }),
-      }))}
-    />
-  );
-}
-
-async function TeamCards() {
-  const [track, notes, follows] = await Promise.all([getTrack(SLUG), getApprovedNotes(SLUG), getFollows()]);
-  const cities = new Set(follows.map((f) => f.city)).size;
-  const tickets = follows.filter((f) => f.ticketIntent).length;
-  return (
-    <>
-      <Link href="/studio" className="surface block p-6">
-        <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">For Herman&apos;s team</p>
-        <h3 className="mt-2 text-2xl font-semibold tracking-tight">Nothing goes live until you approve it.</h3>
-        <p className="mt-2 text-[15px] text-muted-foreground">
-          Write a note at a timestamp, send it for review, approve it. Editing an approved note sends it back to review.
-        </p>
-        <p className="mt-6 text-sm">
-          <span className="num font-semibold">{notes.length}</span> <span className="text-muted-foreground">approved notes live on {track?.title ?? "this track"}</span>
-        </p>
-      </Link>
-      <Link href="/team" className="surface block p-6">
-        <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">For promoters</p>
-        <h3 className="mt-2 text-2xl font-semibold tracking-tight">See which cities would buy a ticket.</h3>
-        <p className="mt-2 text-[15px] text-muted-foreground">
-          Every follower opted in and named a city. Followers and ticket intent are counted separately.
-        </p>
-        <p className="mt-6 text-sm">
-          <span className="num font-semibold">{follows.length}</span> <span className="text-muted-foreground">followers</span>
-          {" · "}
-          <span className="num font-semibold">{tickets}</span> <span className="text-muted-foreground">would buy</span>
-          {" · "}
-          <span className="num font-semibold">{cities}</span> <span className="text-muted-foreground">cities</span>
-        </p>
-      </Link>
-    </>
-  );
+async function Release() {
+  const [track, notes] = await Promise.all([getTrack(SLUG), getApprovedNotes(SLUG)]);
+  if (!track) return null;
+  return <LatestRelease track={track} notes={notes} />;
 }

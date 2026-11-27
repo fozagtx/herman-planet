@@ -35,6 +35,11 @@ export type Track = {
   related: { slug: string | null; href?: string; title: string; why: string }[];
   liveUpdate: { approved: boolean; title: string; body: string } | null;
   placeholderMedia: boolean;
+  /** Official Spotify track: when set, the page plays the real song via the Spotify embed. */
+  spotifyTrackId?: string | null;
+  /** Official 30s preview (Apple). */
+  previewUrl?: string | null;
+  artworkUrl?: string | null;
 };
 
 export type Follow = {
