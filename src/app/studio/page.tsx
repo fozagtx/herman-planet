@@ -5,7 +5,7 @@ import { saveNote, setNoteStatus, signOut } from "@/app/actions";
 import { isTeam } from "@/lib/auth";
 import { getAllNotes, getTracks } from "@/lib/store";
 import type { Note, NoteStatus } from "@/lib/types";
-import { LiveUpdateForm, NewTrackForm, SignInForm, TrackForm, fieldCls } from "./forms";
+import { IslandSubmit, LiveUpdateForm, NewTrackForm, SignInForm, TrackForm, fieldCls } from "./forms";
 
 export const metadata = { title: "Studio · Behind the Hook", robots: { index: false } };
 
@@ -156,9 +156,10 @@ function NoteRow({ n }: { n: Note }) {
           <form key={x.to} action={setNoteStatus}>
             <input type="hidden" name="id" value={n.id} />
             <input type="hidden" name="status" value={x.to} />
-            <button className={`press inline-flex min-h-11 items-center rounded-full px-4 text-sm font-medium ${x.to === "approved" ? "bg-ink text-surface hover:bg-ink/85" : "border border-line bg-surface hover:border-ink/30"}`}>
+            <IslandSubmit what={n.title} done={x.to === "approved" ? "Live" : "Saved"}
+              className={`press inline-flex min-h-11 items-center rounded-full px-4 text-sm font-medium ${x.to === "approved" ? "bg-ink text-surface hover:bg-ink/85" : "border border-line bg-surface hover:border-ink/30"}`}>
               {x.label}
-            </button>
+            </IslandSubmit>
           </form>
         ))}
         <details className="w-full">
@@ -190,9 +191,11 @@ function NoteForm({ note, trackSlug }: { note?: Note; trackSlug: string }) {
       <label className={label}>Title (6 words or fewer)<input name="title" required maxLength={80} defaultValue={note?.title} className={fieldCls} /></label>
       <label className={label}>Note (2 to 4 sentences, in Herman&apos;s words)<textarea name="body" required maxLength={600} rows={3} defaultValue={note?.body} className={fieldCls} /></label>
       <label className={label}>Credits, one per line<textarea name="credits" rows={2} defaultValue={note?.credits.join("\n")} className={fieldCls} /></label>
-      <button className="press inline-flex min-h-11 items-center justify-self-start rounded-full bg-ink px-5 text-sm font-medium text-surface hover:bg-ink/85">
-        {note ? "Save (goes to review)" : "Save as draft"}
-      </button>
+      <div className="justify-self-start">
+        <IslandSubmit what={note ? note.title : "New note"} className="press inline-flex min-h-11 items-center rounded-full bg-ink px-5 text-sm font-medium text-surface hover:bg-ink/85">
+          {note ? "Save (goes to review)" : "Save as draft"}
+        </IslandSubmit>
+      </div>
     </form>
   );
 }

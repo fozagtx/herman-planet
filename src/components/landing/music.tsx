@@ -5,6 +5,7 @@ import { Reveal } from "@/components/reveal";
 import { DiagonalCarousel } from "@/components/ui/diagonal-carousel";
 import { MusicPlayer } from "@/components/ui/music-player";
 import { CATALOGUE } from "@/lib/catalogue";
+import { PlayingIsland } from "@/components/islands";
 
 type Props = {
   /** "ink" for the landing band, "paper" inside the track page. */
@@ -21,6 +22,8 @@ export function Music({ tone = "ink", kicker = "Music", heading = "Every release
   const list = exclude ? CATALOGUE.filter((c) => c.title !== exclude) : CATALOGUE;
   const [i, setI] = useState(0);
   const [touched, setTouched] = useState(false);
+  const [pb, setPb] = useState({ playing: false, time: 0, duration: 30 });
+  const [started, setStarted] = useState(false);
   const r = list[i];
   const ink = tone === "ink";
   const pick = (n: number) => {
@@ -28,6 +31,11 @@ export function Music({ tone = "ink", kicker = "Music", heading = "Every release
     setI(n);
   };
   return (
+    <>
+    {started && (
+      <PlayingIsland id={`${id}-preview`} title={r.title} subtitle={`${r.artist} · preview`} art={r.art} playing={pb.playing} time={pb.time} duration={pb.duration}
+        onToggle={() => document.querySelector<HTMLButtonElement>(`#${id} button[aria-label="Pause"], #${id} button[aria-label="Play"]`)?.click()} />
+    )}
     <section id={id} className={ink ? "bg-ink py-14 text-surface md:py-24" : "border-t border-line bg-surface/50 py-12 text-ink md:py-20"}>
       <Reveal className="mx-auto flex max-w-6xl flex-wrap items-end justify-between gap-3 px-6 md:px-8">
         <div>
@@ -55,6 +63,7 @@ export function Music({ tone = "ink", kicker = "Music", heading = "Every release
             loop={false}
             accentColor="#edff00"
             onTrackChange={(_, n) => n !== i && setI(n)}
+            onPlaybackChange={(st) => { setPb(st); if (st.playing) setStarted(true); }}
           />
         </div>
         <div className={`flex gap-4 text-[13px] ${ink ? "text-surface/55" : "text-muted-foreground"}`}>
@@ -64,5 +73,6 @@ export function Music({ tone = "ink", kicker = "Music", heading = "Every release
         </div>
       </div>
     </section>
+    </>
   );
 }

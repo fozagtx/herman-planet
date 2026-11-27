@@ -1,6 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
+import { SaveIsland } from "@/components/islands";
 import { addTrack, saveLiveUpdate, saveTrack, signIn, type FormState } from "@/app/actions";
 import type { Track } from "@/lib/types";
 
@@ -68,6 +70,7 @@ export function TrackForm({ track }: { track: Track }) {
         Credits, one per line as Role: Name
         <textarea name="credits" rows={5} defaultValue={track.credits.map((c) => `${c.role}: ${c.name}`).join("\n")} className={`${fieldCls} leading-relaxed`} />
       </label>
+      <SaveIsland what="Track details" pending={pending} result={state} />
       <div className="flex flex-wrap items-center gap-3">
         <button disabled={pending} className={btn}>{pending ? "Saving" : "Save track"}</button>
         <Status state={state} />
@@ -94,6 +97,7 @@ export function LiveUpdateForm({ track }: { track: Track }) {
         <input type="checkbox" name="approved" defaultChecked={!!u?.approved} className="h-4 w-4 accent-[#1d1730]" />
         Approved: show this on the site
       </label>
+      <SaveIsland what="Live update" pending={pending} result={state} />
       <div className="flex flex-wrap items-center gap-3">
         <button disabled={pending} className={btn}>{pending ? "Saving" : "Save update"}</button>
         <Status state={state} />
@@ -119,10 +123,22 @@ export function NewTrackForm() {
         Cover image link
         <input name="artwork" type="url" placeholder="https://..." className={fieldCls} />
       </label>
+      <SaveIsland what="New track" pending={pending} result={state} done="Added" />
       <div className="flex flex-wrap items-center gap-3">
         <button disabled={pending} className={btn}>{pending ? "Adding" : "Add track"}</button>
         <Status state={state} />
       </div>
     </form>
+  );
+}
+
+/** Submit button for plain server-action forms (notes): shows the save on the island. */
+export function IslandSubmit({ children, className, what, done = "Saved" }: { children: React.ReactNode; className: string; what: string; done?: string }) {
+  const { pending } = useFormStatus();
+  return (
+    <>
+      <SaveIsland what={what} pending={pending} done={done} />
+      <button disabled={pending} className={className}>{children}</button>
+    </>
   );
 }

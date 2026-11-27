@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored registry code (islandcn engine + kit): kept as shipped.
+    "src/lib/island/**",
+    "src/components/islandcn/**",
   ]),
 ]);
 

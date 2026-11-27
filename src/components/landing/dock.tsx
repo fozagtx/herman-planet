@@ -29,12 +29,6 @@ export function Dock() {
             { label: "SoundCloud", href: "https://soundcloud.com/hermansuede" },
           ],
         },
-        {
-          title: "Herman's team",
-          links: [
-            { label: "Studio", href: "/studio" },
-          ],
-        },
       ]}
     />
   );

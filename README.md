@@ -54,6 +54,7 @@ Not yet from Herman's team:
 - **Paper & Ink**: warm paper, violet-black ink, colour only where it means something (peach, coral and lavender mark Sound, Lyrics and Production; `#edff00` on ink marks "Approved"). Geist for text, Instrument Serif for display.
 - **Mobile first**: every section checked at 375px with no sideways scroll. On phones the track page puts a small cover beside the title so the moments are in the first screen.
 - **Motion**: a 2 second first-visit intro, sections that ease in on scroll, Lenis smooth scroll. All of it is off for visitors who prefer reduced motion.
+- **Live status island (islandcn)**: one black pill at the top of every page. It shows what is playing (hero previews, the release carousel, the song on the track page with the moment you are in) and, in Studio, each save: a spinner, then a check, "Live" on approve, or what to fix. No demo data: it only appears for real playback and real saves.
 - **Players stay in sync**: the hero player, the release carousel player and the Spotify preview all show live progress.
 - **Accessibility**: 44px touch targets, a visible ink focus ring on everything, a keyboard-operable timeline (arrow keys seek 5 seconds), labelled form fields, skeletons while loading.
 

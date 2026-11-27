@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
+import { Providers } from "@/components/providers";
 import { SmoothScroll } from "@/components/smooth-scroll";
 import "./globals.css";
 
@@ -18,7 +19,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${serif.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-paper text-ink">
         <SmoothScroll />
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

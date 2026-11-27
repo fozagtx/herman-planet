@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Pause, Play, X } from "lucide-react";
 import { SiSpotify } from "react-icons/si";
 import { MagneticSpotlightMarquee } from "@/components/ui/magnetic-spotlight-marquee";
+import { PlayingIsland } from "@/components/islands";
 
 const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 
@@ -49,11 +50,14 @@ export function Hero({ items }: { items: HeroItem[] }) {
           ["Singer and songwriter", "from Accra, Ghana."],
           ["Afrobeats and R&B,", "with Ga in the mix."],
         ]}
-        navEmail="Herman Suede"
-        navLinks="Tap a cover to hear it"
+        navEmail=""
+        navLinks=""
         footerText=""
       />
       <audio ref={audio} onTimeUpdate={(e) => setPos({ t: e.currentTarget.currentTime, d: e.currentTarget.duration || 30 })} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => setPlaying(false)} preload="none" />
+      {now && (
+        <PlayingIsland id="hero-preview" title={now.title} subtitle="Herman Suede · preview" art={now.src} playing={playing} time={pos.t} duration={pos.d} onToggle={() => onItem(active!)} />
+      )}
       {now && (
         <div role="status" className="fixed inset-x-3 bottom-24 z-40 mx-auto flex max-w-md items-center gap-3 overflow-hidden rounded-full border border-line bg-surface/95 p-1.5 pr-2 shadow-[0_18px_40px_-16px_rgba(29,23,48,0.35)] backdrop-blur animate-in fade-in slide-in-from-bottom-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}

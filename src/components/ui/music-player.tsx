@@ -49,6 +49,8 @@ export interface MusicPlayerProps {
   accentColor?: string;
   /** Called whenever the active track changes, with the track and its index. */
   onTrackChange?: (track: MusicTrack, index: number) => void;
+  /** Reports play state and position, e.g. for a status island. */
+  onPlaybackChange?: (state: { playing: boolean; time: number; duration: number }) => void;
   /** Extra class names for the root element. */
   className?: string;
 }
@@ -81,6 +83,7 @@ export function MusicPlayer({
   showProgress = true,
   accentColor,
   onTrackChange,
+  onPlaybackChange,
   className,
 }: MusicPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -98,6 +101,13 @@ export function MusicPlayer({
   useEffect(() => {
     onTrackChangeRef.current = onTrackChange;
   }, [onTrackChange]);
+
+  const onPlaybackRef = useRef(onPlaybackChange);
+  useEffect(() => {
+    onPlaybackRef.current = onPlaybackChange;
+  }, [onPlaybackChange]);
+  const report = (a: HTMLAudioElement) =>
+    onPlaybackRef.current?.({ playing: !a.paused, time: a.currentTime, duration: Number.isFinite(a.duration) ? a.duration : 30 });
 
   const track = tracks[index];
 
@@ -186,9 +196,9 @@ export function MusicPlayer({
       <audio
         ref={audioRef}
         preload="metadata"
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
-        onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
+        onPlay={(e) => { setIsPlaying(true); report(e.currentTarget); }}
+        onPause={(e) => { setIsPlaying(false); report(e.currentTarget); }}
+        onTimeUpdate={(e) => { setCurrentTime(e.currentTarget.currentTime); report(e.currentTarget); }}
         onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
         onEnded={handleEnded}
       />

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { ArrowLeft, BadgeCheck, Headphones, Pause, Play, Volume2 } from "lucide-react";
 import { PlatformIcon } from "@/lib/platforms";
+import { PlayingIsland } from "@/components/islands";
 import { Reveal } from "@/components/reveal";
 import { ShareSheet } from "@/components/ui/share-sheet";
 import { Follow } from "./follow";
@@ -31,6 +32,8 @@ type Player = {
   setSolo?: (ids: string[] | null) => void;
   embed?: ReactNode;
   previewNote?: string;
+  /** Spotify's 30s preview position, when that is what's playing. */
+  preview?: { t: number; d: number } | null;
 };
 
 type Props = { track: Track; notes: Note[]; startAt: number | null };
@@ -59,6 +62,7 @@ function SpotifyTrack(props: Props & { id: string }) {
       {...props}
       player={{
         status, playing, time, duration, seek, toggle, embed,
+        preview: preview ? previewPos : null,
         previewNote: preview
           ? "Spotify is playing its 30 second preview. Sign in to Spotify in this browser to hear the full song from any moment."
           : "Plays through Spotify. Signed in, you hear the full song.",
@@ -106,8 +110,21 @@ function TrackView({ track, notes, startAt, player: p }: Props & { player: Playe
   const pct = (t: number) => `${Math.min(100, (t / p.duration) * 100)}%`;
   const base = process.env.NEXT_PUBLIC_SITE_URL ?? "";
 
+  const moment = active ? `${fmt(active.t)} · ${active.title}` : track.artist;
   return (
     <div className="min-h-svh bg-paper text-ink">
+      {started && (
+        <PlayingIsland
+          id={`track-${track.slug}`}
+          title={track.title}
+          subtitle={p.preview ? `${moment} · Spotify preview` : moment}
+          art={track.artworkUrl}
+          playing={p.playing}
+          time={p.preview ? p.preview.t : p.time}
+          duration={p.preview ? p.preview.d : p.duration}
+          onToggle={p.toggle}
+        />
+      )}
       <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3 md:px-8 md:py-5">
         <Link href="/" className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-ink/70 hover:text-ink">
           <ArrowLeft className="h-4 w-4" /> {track.artist}
