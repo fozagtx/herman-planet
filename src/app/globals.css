@@ -246,3 +246,7 @@ button.surface:hover {
   .press { transition: transform 90ms ease-out, background-color 150ms ease-out, border-color 150ms ease-out; }
   .press:active { transform: scale(0.97); }
 }
+
+/* Herman Planet intro: hidden before paint on repeat visits / reduced motion. */
+.intro-skip .intro { display: none; }
+html.intro-on, html.intro-on body { overflow: hidden; }

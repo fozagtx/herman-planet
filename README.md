@@ -53,13 +53,15 @@ Not yet from Herman's team:
 
 - **Paper & Ink**: warm paper, violet-black ink, colour only where it means something (peach, coral and lavender mark Sound, Lyrics and Production; `#edff00` on ink marks "Approved"). Geist for text, Instrument Serif for display.
 - **Mobile first**: every section checked at 375px with no sideways scroll. On phones the track page puts a small cover beside the title so the moments are in the first screen.
-- **Motion**: Lenis smooth scroll; all motion is off for visitors who prefer reduced motion.
+- **Motion**: a 2 second first-visit intro, sections that ease in on scroll, Lenis smooth scroll. All of it is off for visitors who prefer reduced motion.
+- **Players stay in sync**: the hero player, the release carousel player and the Spotify preview all show live progress.
 - **Accessibility**: 44px touch targets, a visible ink focus ring on everything, a keyboard-operable timeline (arrow keys seek 5 seconds), labelled form fields, skeletons while loading.
 
 VengeanceUI components and what each one does here:
 
 | Component | Job |
 |---|---|
+| Intro (own, GSAP) | "Welcome to Herman Planet": his face pops up as a planet, the name rises, the planet fills the screen and wipes into the homepage. About 2 seconds, once per session, tap or Enter skips, off for reduced motion |
 | Magnetic Spotlight Marquee | Hero: his photo and covers move past; hover pauses, a tap plays that song's preview |
 | Glow Border Card | The new single's cover, edged in the three note colours |
 | Diagonal Carousel + Music Player | Every release. Won a side-by-side test against Perspective, Cylinder and Circular: it keeps square covers whole, shows titles and can drive the player |

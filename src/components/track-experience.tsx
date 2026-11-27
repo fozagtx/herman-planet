@@ -40,8 +40,20 @@ export function TrackExperience(props: Props) {
 }
 
 function SpotifyTrack(props: Props & { id: string }) {
-  const { host, status, playing, time, duration, preview, seek, toggle } = useSpotifyPlayer(props.id, props.track.duration);
-  const embed = <div ref={host as RefObject<HTMLDivElement>} className="min-h-20 overflow-hidden rounded-[13px] bg-sunk" />;
+  const { host, status, playing, time, duration, preview, previewPos, seek, toggle } = useSpotifyPlayer(props.id, props.track.duration);
+  const embed = (
+    <>
+      <div ref={host as RefObject<HTMLDivElement>} className="min-h-20 overflow-hidden rounded-[13px] bg-sunk" />
+      {preview && (
+        <div className="mt-2 flex items-center gap-3" aria-label="Spotify preview progress">
+          <span className="relative h-1 flex-1 overflow-hidden rounded-full bg-sunk">
+            <span className="absolute inset-y-0 left-0 w-full origin-left rounded-full bg-ink transition-transform duration-200 ease-linear" style={{ transform: `scaleX(${Math.min(1, previewPos.t / previewPos.d)})` }} />
+          </span>
+          <span className="num text-xs text-muted-foreground">{fmt(previewPos.t)} / {fmt(previewPos.d)}</span>
+        </div>
+      )}
+    </>
+  );
   return (
     <TrackView
       {...props}

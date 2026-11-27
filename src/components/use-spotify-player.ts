@@ -44,6 +44,7 @@ export function useSpotifyPlayer(trackId: string, fallbackDuration: number) {
   const [duration, setDuration] = useState(fallbackDuration);
   // Signed-out listeners get Spotify's 30s preview, whose positions don't map to the song.
   const [preview, setPreview] = useState(false);
+  const [previewPos, setPreviewPos] = useState({ t: 0, d: 30 });
   const uri = `spotify:track:${trackId}`;
 
   useEffect(() => {
@@ -60,6 +61,7 @@ export function useSpotifyPlayer(trackId: string, fallbackDuration: number) {
           setPlaying(!e.data.isPaused);
           if (e.data.duration > 0 && e.data.duration < 40000 && fallbackDuration > 60) {
             setPreview(true);
+            setPreviewPos({ t: e.data.position / 1000, d: e.data.duration / 1000 });
             return;
           }
           setPreview(false);
@@ -104,5 +106,5 @@ export function useSpotifyPlayer(trackId: string, fallbackDuration: number) {
     } else c.togglePlay();
   }, []);
 
-  return { host, status, playing, time, duration, preview, seek, toggle };
+  return { host, status, playing, time, duration, preview, previewPos, seek, toggle };
 }

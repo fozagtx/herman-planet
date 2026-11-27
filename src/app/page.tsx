@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { Closing } from "@/components/landing/closing";
 import { Dock } from "@/components/landing/dock";
 import { Hero } from "@/components/landing/hero";
+import { Intro } from "@/components/landing/intro";
 import { LatestRelease } from "@/components/landing/latest-release";
 import { Lines } from "@/components/landing/lines";
 import { Music } from "@/components/landing/music";
@@ -28,6 +29,7 @@ const HERO_ITEMS = [
 export default function Home() {
   return (
     <main className="flex w-full flex-1 flex-col">
+      <Intro />
       <Hero items={HERO_ITEMS} />
       <Suspense fallback={<div className="mx-auto my-24 h-[520px] w-full max-w-6xl animate-pulse rounded-[15px] bg-sunk" />}>
         <Release />
