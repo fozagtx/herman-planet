@@ -34,7 +34,7 @@ export function Hero({ items }: { items: HeroItem[] }) {
   return (
     <>
       <MagneticSpotlightMarquee
-        className="h-[100svh] min-h-[640px] bg-paper md:min-h-[800px] dark:bg-paper"
+        className="h-[86svh] min-h-[580px] bg-paper md:h-[100svh] md:min-h-[800px] dark:bg-paper"
         images={items.map((i) => i.src)}
         itemLabels={items.map((i) => i.title)}
         onItemClick={onItem}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Reveal } from "@/components/reveal";
 import { DiagonalCarousel } from "@/components/ui/diagonal-carousel";
 import { MusicPlayer } from "@/components/ui/music-player";
 import { CATALOGUE } from "@/lib/catalogue";
@@ -27,16 +28,16 @@ export function Music({ tone = "ink", kicker = "Music", heading = "Every release
     setI(n);
   };
   return (
-    <section id={id} className={ink ? "bg-ink py-24 text-surface" : "border-t border-line bg-surface/50 py-20 text-ink"}>
-      <div className="mx-auto flex max-w-6xl flex-wrap items-end justify-between gap-4 px-6 md:px-8">
+    <section id={id} className={ink ? "bg-ink py-14 text-surface md:py-24" : "border-t border-line bg-surface/50 py-12 text-ink md:py-20"}>
+      <Reveal className="mx-auto flex max-w-6xl flex-wrap items-end justify-between gap-3 px-6 md:px-8">
         <div>
           <p className={`text-[11px] font-medium uppercase tracking-wider ${ink ? "text-surface/55" : "text-muted-foreground"}`}>{kicker}</p>
           <h2 className="mt-3 font-[family-name:var(--font-serif)] text-[clamp(44px,6vw,80px)] leading-[0.95]">{heading}</h2>
         </div>
         <p className={`max-w-xs text-[15px] ${ink ? "text-surface/60" : "text-muted-foreground"}`}>Swipe through the covers. The player follows.</p>
-      </div>
+      </Reveal>
       <DiagonalCarousel
-        className={`h-[480px] outline-none md:h-[520px] ${ink ? "-mt-6" : "-mt-10 md:-mt-20"}`}
+        className={`h-[420px] outline-none md:h-[520px] ${ink ? "-mt-6" : "-mt-10 md:-mt-20"}`}
         items={list.map((c) => ({ src: c.art, title: `${c.title} · ${c.year}` }))}
         activeIndex={i}
         onActiveIndexChange={pick}

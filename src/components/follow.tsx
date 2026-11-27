@@ -1,4 +1,5 @@
 import { PLATFORMS } from "@/lib/platforms";
+import { Reveal } from "@/components/reveal";
 import type { Track } from "@/lib/types";
 
 const FOLLOW = PLATFORMS.filter((p) => ["Spotify", "Apple Music", "Instagram", "YouTube"].includes(p.label));
@@ -6,11 +7,11 @@ const FOLLOW = PLATFORMS.filter((p) => ["Spotify", "Apple Music", "Instagram", "
 /** Brief step 04: follow future releases, or see an approved live update. No forms, no data kept here. */
 export function Follow({ liveUpdate }: { liveUpdate?: Track["liveUpdate"] }) {
   return (
-    <section id="follow" className="mx-auto grid w-full max-w-6xl gap-10 px-6 py-24 md:grid-cols-2 md:px-8">
-      <div>
+    <section id="follow" className="mx-auto grid w-full max-w-6xl gap-8 px-6 py-14 md:grid-cols-2 md:gap-10 md:px-8 md:py-24">
+      <Reveal>
         <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Come back</p>
         <h2 className="mt-3 font-[family-name:var(--font-serif)] text-[clamp(44px,6vw,80px)] leading-[0.95]">Hear the next one first.</h2>
-        <p className="mt-5 max-w-sm text-[17px] leading-relaxed text-ink/75">
+        <p className="mt-4 max-w-sm text-[17px] leading-relaxed text-ink/75 md:mt-5">
           Follow Herman where you listen. New releases land in your feed the day they drop.
         </p>
         <div className="mt-7 flex flex-wrap gap-2">
@@ -21,8 +22,8 @@ export function Follow({ liveUpdate }: { liveUpdate?: Track["liveUpdate"] }) {
             </a>
           ))}
         </div>
-      </div>
-      <div className="surface self-start p-6">
+      </Reveal>
+      <Reveal delay={0.08} className="surface self-start p-6">
         <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Live</p>
         {liveUpdate?.approved ? (
           <>
@@ -37,7 +38,7 @@ export function Follow({ liveUpdate }: { liveUpdate?: Track["liveUpdate"] }) {
             </p>
           </>
         )}
-      </div>
+      </Reveal>
     </section>
   );
 }

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { ArrowLeft, BadgeCheck, Headphones, Pause, Play, Volume2 } from "lucide-react";
 import { PlatformIcon } from "@/lib/platforms";
+import { Reveal } from "@/components/reveal";
 import { ShareSheet } from "@/components/ui/share-sheet";
 import { Follow } from "./follow";
 import { Music } from "./landing/music";
@@ -201,6 +202,7 @@ function TrackView({ track, notes, startAt, player: p }: Props & { player: Playe
             </div>
 
             {/* Moments */}
+            <Reveal delay={0.05}>
             <ol className="mt-6 space-y-2">
               {notes.map((n) => {
                 const open = active?.id === n.id;
@@ -234,9 +236,10 @@ function TrackView({ track, notes, startAt, player: p }: Props & { player: Playe
                 );
               })}
             </ol>
+            </Reveal>
           </section>
 
-          <section className="mt-14 border-t border-line pt-8">
+          <Reveal className="mt-10 border-t border-line pt-6 md:mt-14 md:pt-8">
             <h3 className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Credits</h3>
             <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3 lg:grid-cols-5">
               {track.credits.map((c) => (
@@ -246,7 +249,7 @@ function TrackView({ track, notes, startAt, player: p }: Props & { player: Playe
                 </div>
               ))}
             </dl>
-          </section>
+          </Reveal>
 
 
         </main>

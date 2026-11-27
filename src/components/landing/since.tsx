@@ -7,11 +7,11 @@ import { CATALOGUE } from "@/lib/catalogue";
 export function Since() {
   const ordered = [...CATALOGUE].sort((a, b) => Number(a.year) - Number(b.year));
   return (
-    <section className="mx-auto w-full max-w-6xl overflow-hidden px-6 py-24 md:px-8">
+    <section className="mx-auto w-full max-w-6xl overflow-hidden px-6 py-14 md:px-8 md:py-24">
       <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Since 2018</p>
       <h2 className="mt-3 font-[family-name:var(--font-serif)] text-[clamp(44px,6vw,80px)] leading-[0.95]">Eight years of covers</h2>
       <ImageCollage
-        className="mt-6 min-h-[360px] md:min-h-[420px]"
+        className="mt-2 min-h-[300px] gap-8 md:mt-6 md:min-h-[420px] md:gap-12"
         containerClassName="h-auto min-h-40 max-w-full flex-wrap gap-2 md:gap-4"
         hint={<span className="text-[15px] font-normal text-muted-foreground">Tap to line them up, Pretty Mama (2018) to She Get (2026)</span>}
         imageClassName="h-[72px] w-[72px] sm:h-28 sm:w-28 md:h-40 md:w-40 aspect-square rounded-[11px] md:rounded-[13px] shadow-[0_14px_30px_-14px_rgba(29,23,48,0.5)]"

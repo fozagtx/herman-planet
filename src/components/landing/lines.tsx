@@ -1,6 +1,7 @@
 "use client";
 
 import { Quotes } from "@phosphor-icons/react";
+import { Reveal } from "@/components/reveal";
 import { VerseCards } from "@/components/ui/verse-cards";
 import { CATALOGUE } from "@/lib/catalogue";
 
@@ -12,8 +13,8 @@ const LINES = [
 
 export function Lines() {
   return (
-    <section className="mx-auto grid w-full max-w-6xl items-center gap-10 px-6 pb-24 md:grid-cols-2 md:px-8">
-      <div>
+    <section className="mx-auto grid w-full max-w-6xl items-center gap-6 px-6 pb-14 md:grid-cols-2 md:gap-10 md:px-8 md:pb-24">
+      <Reveal>
         <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Lines from She Get</p>
         <h2 className="mt-3 font-[family-name:var(--font-serif)] text-[clamp(40px,5vw,68px)] leading-[0.95]">
           A trek across Accra, in three lines.
@@ -21,8 +22,8 @@ export function Lines() {
         <p className="mt-5 max-w-md text-[17px] leading-relaxed text-ink/75">
           The hook is about the long ride to see someone who lives all the way in Dansoman. Open the deck and flick through.
         </p>
-      </div>
-      <div className="surface relative h-[440px] overflow-hidden">
+      </Reveal>
+      <div className="surface relative h-[380px] overflow-hidden md:h-[440px]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={CATALOGUE[0].art} alt="" aria-hidden className="absolute inset-0 h-full w-full rounded-[15px] object-cover" />
         <div className="absolute inset-0 rounded-[15px] bg-ink/45" />

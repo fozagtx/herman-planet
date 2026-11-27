@@ -212,7 +212,7 @@ export function CircularGallery({
     // Rebuild when structural inputs change; live knobs flow through optsRef.
   }, [count, radius, images]);
 
-  // Reveal the centre preview with the hovered card's image — swaps instantly
+  // Reveal the centre preview with the hovered card's image: swaps instantly
   // so moving between cards feels immediate, and the frame fades in.
   const showPreviewImage = (src?: string) => {
     const img = previewRef.current;
@@ -239,7 +239,7 @@ export function CircularGallery({
       )}
       style={{ cursor: "grab" }}
     >
-      {/* Centre preview — hidden until a card is hovered */}
+      {/* Centre preview: hidden until a card is hovered */}
       {showPreview && defaultPreview ? (
         <div
           ref={previewWrapRef}

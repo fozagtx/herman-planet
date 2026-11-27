@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Reveal } from "@/components/reveal";
 import { PlatformIcon } from "@/lib/platforms";
 import { ArrowUpRight } from "lucide-react";
 import type { Note, Track } from "@/lib/types";
@@ -11,9 +12,9 @@ const DOT = { sound: "#ffcf8a", lyrics: "#f6a19a", production: "#c9b7f2" } as co
 
 export function LatestRelease({ track, notes }: { track: Track; notes: Note[] }) {
   return (
-    <section id="listen" className="mx-auto grid w-full max-w-6xl items-center gap-10 px-6 py-24 md:grid-cols-2 md:gap-16 md:px-8">
-      <ReleaseCover src={track.artworkUrl ?? ""} alt={`${track.title} cover art`} />
-      <div>
+    <section id="listen" className="mx-auto grid w-full max-w-6xl items-center gap-8 px-6 py-14 md:grid-cols-2 md:gap-16 md:px-8 md:py-24">
+      <Reveal><ReleaseCover src={track.artworkUrl ?? ""} alt={`${track.title} cover art`} /></Reveal>
+      <Reveal delay={0.08}>
         <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">New single · {track.year}</p>
         <h2 className="mt-3 font-[family-name:var(--font-serif)] text-[clamp(56px,8vw,112px)] leading-[0.9] tracking-[-0.02em]">{track.title}</h2>
         <p className="mt-5 max-w-md text-[17px] leading-relaxed text-ink/75">
@@ -30,7 +31,7 @@ export function LatestRelease({ track, notes }: { track: Track; notes: Note[] })
           <ShareSheet url={`${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/t/${track.slug}`} title={`Share ${track.title}`} theme="light" variant="compact" />
         </div>
         {notes.length > 0 && (
-          <div className="mt-10 border-t border-line pt-6">
+          <div className="mt-8 border-t border-line pt-5 md:mt-10 md:pt-6">
             <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Inside the song</p>
             <ul className="mt-2 divide-y divide-line">
               {notes.map((n) => (
@@ -46,7 +47,7 @@ export function LatestRelease({ track, notes }: { track: Track; notes: Note[] })
             </ul>
           </div>
         )}
-      </div>
+      </Reveal>
     </section>
   );
 }

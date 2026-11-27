@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Reveal } from "@/components/reveal";
 import { SiApplemusic, SiSpotify } from "react-icons/si";
 import { CircularGallery } from "@/components/ui/circular-gallery";
 import { CATALOGUE } from "@/lib/catalogue";
@@ -20,9 +21,9 @@ export function Stats() {
     return () => mq.removeEventListener("change", sync);
   }, []);
   return (
-    <section id="streams" className="py-24">
-      <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[15px] border border-line bg-surface">
-        <div className="h-[260px] md:h-[620px]">
+    <section id="streams" className="py-12 md:py-24">
+      <Reveal className="relative mx-auto max-w-6xl overflow-hidden rounded-[15px] border border-line bg-surface">
+        <div className="h-[230px] md:h-[620px]">
           <CircularGallery key={radius} images={CATALOGUE.map((c) => c.art)} count={radius > 200 ? 120 : 64} radius={radius} itemWidth={radius > 200 ? 45 : 30} itemHeight={radius > 200 ? 60 : 40} showPreview={false} className="bg-none bg-surface" />
         </div>
         <div className="relative z-20 flex flex-col items-center px-6 pb-10 text-center md:pointer-events-none md:absolute md:inset-0 md:justify-center md:pb-0">
@@ -40,8 +41,8 @@ export function Stats() {
             </a>
           </div>
         </div>
-      </div>
-      <div className="mx-auto mt-6 grid max-w-6xl grid-cols-2 gap-3 lg:grid-cols-4">
+      </Reveal>
+      <div className="mx-auto mt-4 grid md:mt-6 max-w-6xl grid-cols-2 gap-3 lg:grid-cols-4">
         {TOP_PLAYS.map((t) => (
           <a key={t.title} href={t.href} target="_blank" rel="noopener noreferrer" className="surface block p-5">
             <p className="num text-xl font-semibold tracking-tight md:text-2xl">{n(t.plays)}</p>
