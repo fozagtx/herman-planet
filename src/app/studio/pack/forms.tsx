@@ -70,10 +70,15 @@ export function ItemEditor() {
           </select>
         </label>
         <label className={label}>Title<input name="title" required maxLength={80} className={field} /></label>
-        <label className={label}>Price<input name="price" required maxLength={30} placeholder="GH₵ 250" className={field} /></label>
+        <label className={label}>Price shown<input name="price" required maxLength={30} placeholder="GH₵ 250" className={field} /></label>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-[1fr_120px]">
+        <label className={label}>Amount to charge online with Bachs (optional)<input name="amount" inputMode="decimal" maxLength={12} placeholder="250.00" className={field} /></label>
+        <label className={label}>Currency<input name="currency" maxLength={3} defaultValue="GHS" className={`${field} uppercase`} /></label>
       </div>
       <label className={label}>Description (optional)<textarea name="description" rows={2} maxLength={280} className={field} /></label>
-      <label className={label}>Checkout link (your store: Paystack, Selar, Shopify, Bandcamp…)<input name="buy" type="url" required placeholder="https://" className={field} /></label>
+      <label className={label}>Sizes or options (optional, comma separated)<input name="sizes" maxLength={80} placeholder="S, M, L, XL" className={field} /></label>
+      <label className={label}>Checkout link (optional). Leave empty and fans place an order here; you confirm and send payment details.<input name="buy" type="url" placeholder="https://" className={field} /></label>
       <div className="grid gap-3 sm:grid-cols-2">
         <label className={label}>Image link (optional)<input name="image" type="url" placeholder="https://" className={field} /></label>
         <label className={label}>Snippet audio link, for unreleased (optional)<input name="preview" type="url" placeholder="https://" className={field} /></label>

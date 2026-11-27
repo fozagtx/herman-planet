@@ -45,9 +45,18 @@ Herman asked for "a section dedicated to my fans and that sense of community", w
 - **Name:** the team sets what Herman calls his fans (shown everywhere). It defaults to "The Pack" until set.
 - **Fan wall:** fans post a note (name, optional city and song, consent to be shown). Nothing appears until the team features it.
 - **Giveaways:** the team opens one with a prize and an end date; fans enter once each; the team draws a random winner. Entries stay private; the site shows a winner's first name and city only.
-- **Shop:** merch and unreleased music, each with a price and the team's own checkout link (Paystack, Selar, Shopify, Bandcamp). This site takes no payments.
+- **Shop:** merch and unreleased music. Fans press Buy, pick a size and quantity, and either pay online with **Bachs** (card or mobile money, when a key is set and the item has an amount) or place an order the team confirms. Orders, sample or real, land in Studio → The Pack.
+- **Sample data:** run `npm run db:seed-pack` to add example wall notes, shop items and a live giveaway, all tagged "Sample" on the site. Samples never charge. Remove them in one click in Studio.
 - **Proof, sourced:** After Prep (2019) sold 1,000+ tickets and a 15-school meet-and-greet tour (The Upper Entertainment); his feature on Sarkodie's *Black Love* ("Womba", 2019, Wikipedia); his own words to fans (24 Nov 2026).
-- **Wolf art** is an original faceted wolf drawn for this site.
+- **Photos:** wolf by Rob Bertrand (Pexels, free licence). Sarkodie by Owula kpakpo (CC BY-SA 4.0) and Drake by The Come Up Show (CC BY 2.0), both via Wikimedia Commons, credited on the page with how each relates to Herman.
+
+### Payments with Bachs
+
+1. Add `BACHS_API_KEY` (`sk_sandbox_…` to test, `sk_live_…` for real money) and `BACHS_WEBHOOK_SECRET` to Vercel and `.env.local`.
+2. In the Bachs dashboard, point a webhook at `https://herman-planet.vercel.app/api/webhooks/bachs`.
+3. In Studio → The Pack, give each item an amount and currency (e.g. 250.00 GHS).
+
+Buy then creates the order, opens a Bachs checkout (`reference` = order id) and sends the fan there. The order turns **Paid** when the signed webhook arrives, or when the fan returns and the site checks the checkout's status with Bachs. Without a key, the shop falls back to "place an order, the team sends payment details".
 
 ## What is real and what is not
 

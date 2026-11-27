@@ -100,6 +100,8 @@ export const packPosts = pgTable(
     message: text("message").notNull(),
     song: text("song"),
     status: packPostStatus("status").notNull().default("pending"),
+    /** Seeded example data, tagged "Sample" on the site and removable in one click. */
+    sample: boolean("sample").notNull().default(false),
     consent: boolean("consent").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
@@ -115,8 +117,16 @@ export const packItems = pgTable("pack_items", {
   price: text("price").notNull(),
   imageUrl: text("image_url"),
   previewUrl: text("preview_url"),
-  buyUrl: text("buy_url").notNull(),
+  /** Optional external checkout. Without it, fans place an order and the team sends payment details. */
+  buyUrl: text("buy_url"),
+  /** Decimal amount for online payment, e.g. "250.00". Empty = no online payment. */
+  amount: text("amount"),
+  /** ISO currency for online payment, e.g. "GHS". */
+  currency: text("currency").notNull().default("GHS"),
+  /** Comma-separated sizes or options, e.g. "S, M, L, XL". */
+  sizes: text("sizes"),
   status: liveStatus("status").notNull().default("draft"),
+  sample: boolean("sample").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
@@ -128,6 +138,28 @@ export const giveaways = pgTable("giveaways", {
   endsAt: timestamp("ends_at", { withTimezone: true }).notNull(),
   status: liveStatus("status").notNull().default("draft"),
   winner: text("winner"),
+  sample: boolean("sample").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const orderStatus = pgEnum("order_status", ["new", "confirmed", "paid", "fulfilled", "cancelled"]);
+
+/** A fan's order. The team confirms it and sends payment details; this site takes no money. */
+export const packOrders = pgTable("pack_orders", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  itemId: uuid("item_id")
+    .notNull()
+    .references(() => packItems.id, { onDelete: "cascade" }),
+  size: text("size"),
+  quantity: integer("quantity").notNull().default(1),
+  name: text("name").notNull(),
+  contact: text("contact").notNull(),
+  city: text("city").notNull(),
+  note: text("note"),
+  status: orderStatus("status").notNull().default("new"),
+  /** Bachs checkout session for online payment, when used. */
+  checkoutId: text("checkout_id"),
+  sample: boolean("sample").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 

@@ -1,9 +1,10 @@
 import { Suspense, type ReactNode } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
-import { giveawayStatus, moderatePost, toggleItem } from "@/app/pack-actions";
+import { clearSamples, giveawayStatus, moderatePost, orderStatus, toggleItem } from "@/app/pack-actions";
 import { isTeam } from "@/lib/auth";
-import { getAllGiveaways, getAllItems, getAllPosts, getPackName } from "@/lib/pack";
+import { paymentsOn } from "@/lib/bachs";
+import { countSamples, getAllGiveaways, getAllItems, getAllPosts, getOrders, getPackName } from "@/lib/pack";
 import { IslandSubmit, SignInForm } from "../forms";
 import { DrawWinner, GiveawayEditor, ItemEditor, PackNameForm } from "./forms";
 
@@ -36,7 +37,8 @@ function Panel({ title, hint, children }: { title: string; hint: string; childre
 
 async function Body() {
   if (!(await isTeam())) return <SignInForm />;
-  const [name, posts, giveaways, items] = await Promise.all([getPackName(), getAllPosts(), getAllGiveaways(), getAllItems()]);
+  const [name, posts, giveaways, items, orders, samples] = await Promise.all([getPackName(), getAllPosts(), getAllGiveaways(), getAllItems(), getOrders(), countSamples()]);
+  const newOrders = orders.filter((o) => o.status === "new");
   const pending = posts.filter((p) => p.status === "pending");
   return (
     <>
@@ -48,6 +50,50 @@ async function Body() {
         </div>
         <Link href="/pack" className={`${pill} gap-1.5 border border-line bg-surface hover:border-ink/30`}>View page <ArrowUpRight className="h-3.5 w-3.5" /></Link>
       </header>
+
+      {samples > 0 && (
+        <div className="mt-6 flex flex-wrap items-center gap-3 rounded-[13px] border border-dashed border-line p-4">
+          <p className="flex-1 text-sm text-muted-foreground">
+            <b className="text-ink">{samples} sample items</b> are on the page so you can see how it works. They&apos;re tagged &ldquo;Sample&rdquo; for fans.
+          </p>
+          <form action={clearSamples}>
+            <IslandSubmit what="Sample data" done="Removed" className={`${pill} border border-line bg-surface hover:border-ink/30`}>Remove all sample data</IslandSubmit>
+          </form>
+        </div>
+      )}
+
+      <Panel title={`Orders · ${newOrders.length} new`} hint={paymentsOn() ? "Items with an amount are paid online with Bachs and arrive here as Paid. Others: confirm, send payment details, then mark delivered." : "Online payment is off (no Bachs key yet). Fans order here; you confirm, send payment details, then mark delivered."}>
+        {orders.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No orders yet.</p>
+        ) : (
+          <ul className="space-y-3">
+            {orders.map((o) => (
+              <li key={o.id} className="rounded-[13px] border border-line bg-paper/60 p-4">
+                <p className="font-medium">
+                  {o.quantity} × {o.item}{o.size ? ` (${o.size})` : ""} <span className="num text-muted-foreground">· {o.price} each</span>
+                  {o.sample && <span className="ml-2 rounded-full bg-sunk px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Sample</span>}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {o.name} · {o.contact} · {o.city}{o.note ? ` · “${o.note}”` : ""} · {fmtDate(o.createdAt)} · <b>{o.status}</b>
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {o.status === "paid" && <span className="inline-flex min-h-11 items-center rounded-full bg-ok/15 px-4 text-sm font-medium text-ok">Paid online{o.checkoutId ? ` · ${o.checkoutId.slice(0, 14)}…` : ""}</span>}
+                  {(o.status === "new" ? (["confirmed", "cancelled"] as const) : o.status === "confirmed" || o.status === "paid" ? (["fulfilled", "cancelled"] as const) : ([] as const)).map((to) => (
+                    <form key={to} action={orderStatus}>
+                      <input type="hidden" name="id" value={o.id} />
+                      <input type="hidden" name="status" value={to} />
+                      <IslandSubmit what="Order" done={to === "cancelled" ? "Cancelled" : "Saved"}
+                        className={`${pill} ${to === "cancelled" ? "border border-line bg-surface hover:border-ink/30" : "bg-ink text-surface hover:bg-ink/85"}`}>
+                        {to === "confirmed" ? "Confirm order" : to === "fulfilled" ? "Mark delivered" : "Cancel"}
+                      </IslandSubmit>
+                    </form>
+                  ))}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Panel>
 
       <Panel title="Name" hint="Shown as the page title and across the site.">
         <PackNameForm name={name} />
